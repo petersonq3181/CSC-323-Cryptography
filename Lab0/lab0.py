@@ -1,4 +1,7 @@
 import base64
+from collections import Counter
+from langdetect import detect
+
 
 
 # Task I. A. Implement Common Encoders & Decoders
@@ -22,31 +25,22 @@ def xor_strings(s, key):
 
 
 # Task II. B. Single-byte XOR
-def score_english(s):
-    freqs = {
-        'a': 8.167, 'b': 1.492, 'c': 2.782, 'd': 4.253, 'e': 12.702,
-        'f': 2.228, 'g': 2.015, 'h': 6.094, 'i': 6.966, 'j': 0.153,
-        'k': 0.772, 'l': 4.025, 'm': 2.406, 'n': 6.749, 'o': 7.507,
-        'p': 1.929, 'q': 0.095, 'r': 5.987, 's': 6.327, 't': 9.056,
-        'u': 2.758, 'v': 0.978, 'w': 2.360, 'x': 0.150, 'y': 1.974,
-        'z': 0.074
-    }
+# attempted to write an IOC calculator for english -- ended up using detect from langdetect
+alphabet = "abcdefghijklmnopqrstuvwxyz"
 
-    s = ''.join(filter(str.isalpha, s.lower()))
+def countLetters(s):
+    return sum(1 for c in s if c in alphabet)
 
-    letter_counts = {letter: s.count(letter) for letter in freqs}
-    letter_total = sum(letter_counts.values())
+def getIOC(s):
+    s = s.lower()
+    counts = Counter(s)
+    total = 0
+    for ni in counts.values():
+        total += ni * (ni - 1)
 
-    score = sum((letter_counts[letter] / letter_total * 100 - freqs[letter]) ** 2 for letter in freqs) ** 0.5
-
-    ioc = sum(letter_counts[letter] * (letter_counts[letter] - 1) for letter in letter_counts) / (letter_total * (letter_total - 1))
-
-    ioc_expected = 0.0667
-
-    ioc_score = abs(ioc - ioc_expected)
-
-    return score + ioc_score
-
+    n = countLetters(s)
+    total = float(total) / ((n * (n - 1)) / 26)
+    return total
 
 
 
@@ -70,18 +64,15 @@ if __name__ == "__main__":
     res = xor_strings(b'hello', b'key')
     print("xor_strings result:", res)
 
+    print(detect("This is english"))
+    print(detect("Also english ha used to put the speaker on the desk"))
+    print(detect("df cjkdsij ri3bjkcnkj i nkni nli2 kd"))
+    print(detect("asdff ksjdlvie 3 ind ij "))
 
-    # test encoding 
-    mystr = b"This is definitely an English Plaintext"
-    mystr = xor_strings(mystr, bytes([1]))
-    mystr = bytes2hex(mystr)
-    print(mystr)
-    
-    
 
   
 
-    with open('testB.txt', 'r') as file:
+    with open('Lab0.TaskII.B.txt', 'r') as file:
         hex_strings = file.read().splitlines()
 
     top_scores = []
