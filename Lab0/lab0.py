@@ -26,6 +26,7 @@ def xor_strings(s, key):
 
 # Task II. B. Single-byte XOR
 # attempted to write an IOC calculator for english -- ended up using detect from langdetect
+# TODO detect() is too slow, need to flush out my own scoring funtion 
 alphabet = "abcdefghijklmnopqrstuvwxyz"
 
 def countLetters(s):
@@ -77,22 +78,21 @@ if __name__ == "__main__":
 
     top_scores = []
 
+    gg = 0
     for hex_str in hex_strings:
         byte_str = hex2bytes(hex_str)
 
         for key in range(256):
+            gg += 1 
+            print('gg: ', gg)
+
             key_byte = bytes([key])
             xored_result = xor_strings(byte_str, key_byte)
-            xored_english = bytes2base64(xored_result)
-            score = score_english(xored_english)
 
-            # Add the score, plaintext, and key to the list
-            top_scores.append((score, xored_english, key_byte))
+            plaintext = xored_result.decode('ASCII', errors='ignore')
+            if detect(plaintext) == 'en': 
+                top_scores.append((plaintext, key_byte))
 
-            # Keep only the top 100 scores
-            top_scores = sorted(top_scores, reverse=False, key=lambda x: x[0])[:512]
-
-    # Print the top 100 scores and their associated plaintexts and keys
-    for score, plaintext, key in top_scores:
-        print(f"Score: {score}, Plaintext: {plaintext}, Key: {bytes2hex(key)}")
+    for plaintext, key in top_scores:
+        print(f"Plaintext: {plaintext}, Key: {bytes2hex(key)}")
 
