@@ -54,7 +54,7 @@ def score_english(s):
 
 
 if __name__ == "__main__": 
-    # ----- Task I. A. testing 
+    # ----- Task I. testing 
     byte_string = b"Hello, world!"
     hex_string = bytes2hex(byte_string)
     print("Hex Encoded:", hex_string)
@@ -65,6 +65,10 @@ if __name__ == "__main__":
     print("Base64 Encoded:", base64_str)
     decoded_bytes = base642bytes(base64_str)
     print("Decoded Bytes:", decoded_bytes)
+
+    # ----- Task II. testing 
+    res = xor_strings(b'hello', b'key')
+    print("xor_strings result:", res)
 
 
     # test encoding 
