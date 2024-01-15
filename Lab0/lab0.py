@@ -2,17 +2,17 @@ import base64
 
 
 # Task I. A. Implement Common Encoders & Decoders
-def bytes2hex(s):
-    return s.hex()
+def bytes2hex(byte_string):
+    return byte_string.hex()
 
-def hex2bytes(s):
-    return bytes.fromhex(s)
+def hex2bytes(hex_string):
+    return bytes.fromhex(hex_string)
 
-def base642bytes(s):
-    return base64.b64decode(s)
+def base642bytes(base64_encoded):
+    return base64.b64decode(base64_encoded)
 
 def bytes2base64(s):
-    return base64.b64encode(s).decode('utf-8')
+    return base64.b64encode(s)
 
 
 # Task II. A. Implement XOR
@@ -54,6 +54,7 @@ def score_english(s):
 
 
 if __name__ == "__main__": 
+    # ----- Task I. A. testing 
     byte_string = b"Hello, world!"
     hex_string = bytes2hex(byte_string)
     print("Hex Encoded:", hex_string)
