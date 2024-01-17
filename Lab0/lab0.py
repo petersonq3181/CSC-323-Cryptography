@@ -32,16 +32,20 @@ alphabet = "abcdefghijklmnopqrstuvwxyz"
 def countLetters(s):
     return sum(1 for c in s if c in alphabet)
 
+# IC expected for English is 1.73
+# English typically falls in range 1.5 to 2.0
 def getIOC(s):
-    s = s.lower()
-    counts = Counter(s)
-    total = 0
-    for ni in counts.values():
-        total += ni * (ni - 1)
+    N = len(s)
+    c = 26 
 
-    n = countLetters(s)
-    total = float(total) / ((n * (n - 1)) / 26)
-    return total
+    s = ''.join([c for c in s if c.isalpha()])
+    s = s.lower()
+
+    counts = Counter(s)
+    total = sum(ni * (ni - 1) for ni in counts.values())
+
+    IOC = float(total) / ((N * (N - 1)) / c)
+    return IOC
 
 
 
@@ -65,34 +69,34 @@ if __name__ == "__main__":
     res = xor_strings(b'hello', b'key')
     print("xor_strings result:", res)
 
-    print(detect("This is english"))
-    print(detect("Also english ha used to put the speaker on the desk"))
-    print(detect("df cjkdsij ri3bjkcnkj i nkni nli2 kd"))
-    print(detect("asdff ksjdlvie 3 ind ij "))
+    print(getIOC("This is english"))
+    print(getIOC("Also english used to put the speaker on the desk"))
+    print(getIOC("df cjkdsij ri3bjkcnkj i nkni nli2 kd"))
+    print(getIOC("asdff ksjdlvie 3 ind ij "))
 
 
   
 
-    with open('Lab0.TaskII.B.txt', 'r') as file:
-        hex_strings = file.read().splitlines()
+    # with open('Lab0.TaskII.B.txt', 'r') as file:
+    #     hex_strings = file.read().splitlines()
 
-    top_scores = []
+    # top_scores = []
 
-    gg = 0
-    for hex_str in hex_strings:
-        byte_str = hex2bytes(hex_str)
+    # gg = 0
+    # for hex_str in hex_strings:
+    #     byte_str = hex2bytes(hex_str)
 
-        for key in range(256):
-            gg += 1 
-            print('gg: ', gg)
+    #     for key in range(256):
+    #         gg += 1 
+    #         print('gg: ', gg)
 
-            key_byte = bytes([key])
-            xored_result = xor_strings(byte_str, key_byte)
+    #         key_byte = bytes([key])
+    #         xored_result = xor_strings(byte_str, key_byte)
 
-            plaintext = xored_result.decode('ASCII', errors='ignore')
-            if detect(plaintext) == 'en': 
-                top_scores.append((plaintext, key_byte))
+    #         plaintext = xored_result.decode('ASCII', errors='ignore')
+    #         if detect(plaintext) == 'en': 
+    #             top_scores.append((plaintext, key_byte))
 
-    for plaintext, key in top_scores:
-        print(f"Plaintext: {plaintext}, Key: {bytes2hex(key)}")
+    # for plaintext, key in top_scores:
+    #     print(f"Plaintext: {plaintext}, Key: {bytes2hex(key)}")
 
