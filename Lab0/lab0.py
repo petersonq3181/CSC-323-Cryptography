@@ -26,14 +26,8 @@ def xor_strings(s, key):
 
 
 # Task II. B. Single-byte XOR
-# attempted to write an IOC calculator for english -- ended up using detect from langdetect
-# TODO detect() is too slow, need to flush out my own scoring funtion 
 # Decrypted text: Out on bail, fresh out of jail, California dreaming
 # Soon as I step on the scene, I'm hearing ladies screaming, Key: 127, IOC: 1.0292218824328916
-alphabet = "abcdefghijklmnopqrstuvwxyz"
-
-def countLetters(s):
-    return sum(1 for c in s if c in alphabet)
 
 # IC expected for English is 1.73
 # English typically falls in range 1.5 to 2.0
@@ -52,13 +46,34 @@ def getIOC(s):
     IOC = float(total) / ((N * (N - 1)) / c)
     return IOC
 
-def closestScores(scores, target, n):
-    scores = sorted(scores, key=lambda x: abs(x - target))    
-    return scores[:n]
+def taskIIB():
+    with open('Lab0.TaskII.B.txt', 'r') as file:
+        hex_strings = file.read().splitlines()    
 
-def xor_with_key(byte_data, key):
-    return bytes([b ^ key for b in byte_data])
+    with open('Lab0.TaskII.B.txt', 'r') as file:
+        hex_strings = file.readlines()
 
+    ioc_expected = 1.73  
+    potentials = []
+
+    for hex_str in hex_strings:
+        byte_data = binascii.unhexlify(hex_str.strip())
+
+        for key in range(256):  
+            decrypted = xor_strings(byte_data, bytes([key]))
+            try:
+                plaintext = decrypted.decode('utf-8')
+                ioc = getIOC(plaintext)
+                if ioc > 0:  
+                    potentials.append((plaintext, ioc, key))
+            except UnicodeDecodeError:
+                continue
+
+    potentials.sort(key=lambda x: abs(x[1] - ioc_expected))
+    top_plaintexts = potentials[:5]
+
+    for text, ioc, key in top_plaintexts:
+        print(f"Decrypted text: {text}, Key: {key}, IOC: {ioc}")
 
 
 
@@ -79,60 +94,6 @@ if __name__ == "__main__":
     res = xor_strings(b'hello', b'key')
     print("xor_strings result:", res)
 
-    print(getIOC("This is english"))
-    print(getIOC("Also english used to put the speaker on the desk"))
-    print(getIOC("df cjkdsij ri3bjkcnkj i nkni nli2 kd"))
-    print(getIOC("asdff ksjdlvie 3 ind ij "))
-
-
-  
-
-    with open('Lab0.TaskII.B.txt', 'r') as file:
-        hex_strings = file.read().splitlines()
-
-
-    # # testing 
-    # byte_str = hex2bytes(hex_strings[0])
-    # print('here:')
-    # print(byte_str)
-    # key_byte = bytes([0])
-    # print(key_byte)
-    # xored_result = xor_strings(byte_str, key_byte)
-    # print(xored_result)
-    # plaintext = xored_result.decode('utf-8') #.decode('ASCII')
-    # print(plaintext)
-    # score = getIOC(plaintext)
-    # print(score)
-
-
+    taskIIB()
 
     
-
-    with open('Lab0.TaskII.B.txt', 'r') as file:
-        hex_strings = file.readlines()
-
-    typical_english_ioc = 1.73  # Approximate IOC value for English text
-    possible_plaintexts = []
-
-    for hex_str in hex_strings:
-        byte_data = binascii.unhexlify(hex_str.strip())
-
-        for key in range(256):  # Trying all possible single-byte keys
-            decrypted = xor_with_key(byte_data, key)
-            try:
-                decoded = decrypted.decode('utf-8')
-                ioc = getIOC(decoded)
-                if ioc > 0:  # Filtering non-zero IOC values
-                    possible_plaintexts.append((decoded, ioc, key))
-            except UnicodeDecodeError:
-                continue
-
-    # Sort the possible plaintexts by their IOC score, closer to typical English IOC
-    possible_plaintexts.sort(key=lambda x: abs(x[1] - typical_english_ioc))
-
-    # Select the top 10 plaintexts
-    top_plaintexts = possible_plaintexts[:10]
-
-    # Print the top 10 plaintexts along with their keys
-    for text, ioc, key in top_plaintexts:
-        print(f"Decrypted text: {text}, Key: {key}, IOC: {ioc}")
