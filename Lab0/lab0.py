@@ -1,4 +1,5 @@
 import base64
+import binascii
 from collections import Counter
 from langdetect import detect
 
@@ -27,6 +28,8 @@ def xor_strings(s, key):
 # Task II. B. Single-byte XOR
 # attempted to write an IOC calculator for english -- ended up using detect from langdetect
 # TODO detect() is too slow, need to flush out my own scoring funtion 
+# Decrypted text: Out on bail, fresh out of jail, California dreaming
+# Soon as I step on the scene, I'm hearing ladies screaming, Key: 127, IOC: 1.0292218824328916
 alphabet = "abcdefghijklmnopqrstuvwxyz"
 
 def countLetters(s):
@@ -36,6 +39,8 @@ def countLetters(s):
 # English typically falls in range 1.5 to 2.0
 def getIOC(s):
     N = len(s)
+    if N <= 1: 
+        return 0
     c = 26 
 
     s = ''.join([c for c in s if c.isalpha()])
@@ -47,7 +52,12 @@ def getIOC(s):
     IOC = float(total) / ((N * (N - 1)) / c)
     return IOC
 
+def closestScores(scores, target, n):
+    scores = sorted(scores, key=lambda x: abs(x - target))    
+    return scores[:n]
 
+def xor_with_key(byte_data, key):
+    return bytes([b ^ key for b in byte_data])
 
 
 
@@ -77,26 +87,52 @@ if __name__ == "__main__":
 
   
 
-    # with open('Lab0.TaskII.B.txt', 'r') as file:
-    #     hex_strings = file.read().splitlines()
+    with open('Lab0.TaskII.B.txt', 'r') as file:
+        hex_strings = file.read().splitlines()
 
-    # top_scores = []
 
-    # gg = 0
-    # for hex_str in hex_strings:
-    #     byte_str = hex2bytes(hex_str)
+    # # testing 
+    # byte_str = hex2bytes(hex_strings[0])
+    # print('here:')
+    # print(byte_str)
+    # key_byte = bytes([0])
+    # print(key_byte)
+    # xored_result = xor_strings(byte_str, key_byte)
+    # print(xored_result)
+    # plaintext = xored_result.decode('utf-8') #.decode('ASCII')
+    # print(plaintext)
+    # score = getIOC(plaintext)
+    # print(score)
 
-    #     for key in range(256):
-    #         gg += 1 
-    #         print('gg: ', gg)
 
-    #         key_byte = bytes([key])
-    #         xored_result = xor_strings(byte_str, key_byte)
 
-    #         plaintext = xored_result.decode('ASCII', errors='ignore')
-    #         if detect(plaintext) == 'en': 
-    #             top_scores.append((plaintext, key_byte))
+    
 
-    # for plaintext, key in top_scores:
-    #     print(f"Plaintext: {plaintext}, Key: {bytes2hex(key)}")
+    with open('Lab0.TaskII.B.txt', 'r') as file:
+        hex_strings = file.readlines()
 
+    typical_english_ioc = 1.73  # Approximate IOC value for English text
+    possible_plaintexts = []
+
+    for hex_str in hex_strings:
+        byte_data = binascii.unhexlify(hex_str.strip())
+
+        for key in range(256):  # Trying all possible single-byte keys
+            decrypted = xor_with_key(byte_data, key)
+            try:
+                decoded = decrypted.decode('utf-8')
+                ioc = getIOC(decoded)
+                if ioc > 0:  # Filtering non-zero IOC values
+                    possible_plaintexts.append((decoded, ioc, key))
+            except UnicodeDecodeError:
+                continue
+
+    # Sort the possible plaintexts by their IOC score, closer to typical English IOC
+    possible_plaintexts.sort(key=lambda x: abs(x[1] - typical_english_ioc))
+
+    # Select the top 10 plaintexts
+    top_plaintexts = possible_plaintexts[:10]
+
+    # Print the top 10 plaintexts along with their keys
+    for text, ioc, key in top_plaintexts:
+        print(f"Decrypted text: {text}, Key: {key}, IOC: {ioc}")
