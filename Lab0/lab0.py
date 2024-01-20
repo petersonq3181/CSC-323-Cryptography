@@ -1,6 +1,7 @@
 import base64
 import binascii
 from collections import Counter
+import itertools
 from langdetect import detect
 
 
@@ -48,9 +49,6 @@ def getIOC(s):
 
 def taskIIB():
     with open('Lab0.TaskII.B.txt', 'r') as file:
-        hex_strings = file.read().splitlines()    
-
-    with open('Lab0.TaskII.B.txt', 'r') as file:
         hex_strings = file.readlines()
 
     ioc_expected = 1.73  
@@ -75,25 +73,77 @@ def taskIIB():
     for text, ioc, key in top_plaintexts:
         print(f"Decrypted text: {text}, Key: {key}, IOC: {ioc}")
 
+# Task II. C. Multi-byte XOR
+def taskIIC():
+    with open('Lab0.TaskII.C.txt', 'r') as file:
+        lines = file.readlines()
+
+    ioc_expected = 1.73  
+    potentials = []
+
+    for ctext in lines:
+        byte_data = base64.b64decode(ctext)
+
+        for key1 in range(256):
+            for key2 in range(256):
+                decrypted = xor_strings(byte_data, bytes([key1, key2]))
+                # try:
+                plaintext = decrypted.decode('utf-8')
+                print(type(plaintext), plaintext)
+                ioc = getIOC(plaintext)
+                if ioc > 0:  
+                    potentials.append((plaintext, ioc, key))
+                # except UnicodeDecodeError:
+                #     continue
+
+
+
+
+    potentials.sort(key=lambda x: abs(x[1] - ioc_expected))
+    top_plaintexts = potentials[:20]
+
+    for text, ioc, key in top_plaintexts:
+        print(f"Decrypted text: {text}, Key: {key}, IOC: {ioc}")
 
 
 if __name__ == "__main__": 
-    # ----- Task I. testing 
-    byte_string = b"Hello, world!"
-    hex_string = bytes2hex(byte_string)
-    print("Hex Encoded:", hex_string)
-    decoded_bytes = hex2bytes(hex_string)
-    print("Decoded Bytes:", decoded_bytes)
+    # # ----- Task I. testing 
+    # byte_string = b"Hello, world!"
+    # hex_string = bytes2hex(byte_string)
+    # print("Hex Encoded:", hex_string)
+    # decoded_bytes = hex2bytes(hex_string)
+    # print("Decoded Bytes:", decoded_bytes)
 
-    base64_str = bytes2base64(byte_string)
-    print("Base64 Encoded:", base64_str)
-    decoded_bytes = base642bytes(base64_str)
-    print("Decoded Bytes:", decoded_bytes)
+    # base64_str = bytes2base64(byte_string)
+    # print("Base64 Encoded:", base64_str)
+    # decoded_bytes = base642bytes(base64_str)
+    # print("Decoded Bytes:", decoded_bytes)
 
-    # ----- Task II. testing 
-    res = xor_strings(b'hello', b'key')
-    print("xor_strings result:", res)
+    # # ----- Task II. testing 
+    # res = xor_strings(b'hello', b'key')
+    # print("xor_strings result:", res)
 
-    taskIIB()
+    # taskIIC()
 
+    for i in range(256):  
+        key = bytes([i])
+        print(type(key), len(key), key)
     
+
+    # note: this loop structure will include all keys of byte length 1, and all with byte length 2 
+    gg = 4
+    for i in range(256):
+        for j in range(256):
+            gg -= 1 
+            key = bytes([i, j])
+            print(type(key), len(key), key)
+
+            if gg == 0:
+                break 
+        if gg == 0:
+            break
+    print('got here')
+
+
+
+
