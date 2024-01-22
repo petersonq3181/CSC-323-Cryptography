@@ -3,6 +3,8 @@ import binascii
 from collections import Counter
 import itertools
 from langdetect import detect
+import matplotlib.pyplot as plt
+import numpy as np
 
 
 
@@ -32,6 +34,8 @@ def xor_strings(s, key):
 
 # IC expected for English is 1.73
 # English typically falls in range 1.5 to 2.0
+ioc_expected = 1.73  
+
 def getIOC(s):
     N = len(s)
     if N <= 1: 
@@ -51,7 +55,6 @@ def taskIIB():
     with open('Lab0.TaskII.B.txt', 'r') as file:
         hex_strings = file.readlines()
 
-    ioc_expected = 1.73  
     potentials = []
 
     for hex_str in hex_strings:
@@ -59,8 +62,10 @@ def taskIIB():
 
         for key in range(256):  
             decrypted = xor_strings(byte_data, bytes([key]))
+            # print(type(decrypted), decrypted)
             try:
                 plaintext = decrypted.decode('utf-8')
+                print('ayoo: ', type(plaintext), plaintext)
                 ioc = getIOC(plaintext)
                 if ioc > 0:  
                     potentials.append((plaintext, ioc, key))
@@ -75,36 +80,34 @@ def taskIIB():
 
 # Task II. C. Multi-byte XOR
 def taskIIC():
-    with open('Lab0.TaskII.C.txt', 'r') as file:
-        lines = file.readlines()
+    with open('Lab0.TaskII.C.txt', 'rb') as file:
+        encrypted_data = base642bytes(file.read().strip())
 
-    ioc_expected = 1.73  
-    potentials = []
+    def collect_ioc_scores():
+        potentials = []
 
-    for ctext in lines:
-        byte_data = base64.b64decode(ctext)
+        for key_length in range(1, len(encrypted_data)):
+            for start_index in range(key_length):
+                key = bytes([encrypted_data[i] for i in range(start_index, len(encrypted_data), key_length)])
+                
+                decrypted_data = xor_strings(encrypted_data, key)
+                try:
+                    decrypted_data = decrypted_data.decode('utf-8')
 
-        for key1 in range(256):
-            for key2 in range(256):
-                decrypted = xor_strings(byte_data, bytes([key1, key2]))
-                # try:
-                plaintext = decrypted.decode('utf-8')
-                print(type(plaintext), plaintext)
-                ioc = getIOC(plaintext)
-                if ioc > 0:  
-                    potentials.append((plaintext, ioc, key))
-                # except UnicodeDecodeError:
-                #     continue
+                    score = getIOC(decrypted_data)
 
+                    if score > 0:
+                        potentials.append((decrypted_data, score, key))
+                except UnicodeDecodeError:
+                    continue 
 
+        return potentials
 
+    potentials = collect_ioc_scores()
+    print(len(potentials))
 
-    potentials.sort(key=lambda x: abs(x[1] - ioc_expected))
-    top_plaintexts = potentials[:20]
-
-    for text, ioc, key in top_plaintexts:
+    for text, ioc, key in potentials:
         print(f"Decrypted text: {text}, Key: {key}, IOC: {ioc}")
-
 
 if __name__ == "__main__": 
     # # ----- Task I. testing 
@@ -123,27 +126,4 @@ if __name__ == "__main__":
     # res = xor_strings(b'hello', b'key')
     # print("xor_strings result:", res)
 
-    # taskIIC()
-
-    for i in range(256):  
-        key = bytes([i])
-        print(type(key), len(key), key)
-    
-
-    # note: this loop structure will include all keys of byte length 1, and all with byte length 2 
-    gg = 4
-    for i in range(256):
-        for j in range(256):
-            gg -= 1 
-            key = bytes([i, j])
-            print(type(key), len(key), key)
-
-            if gg == 0:
-                break 
-        if gg == 0:
-            break
-    print('got here')
-
-
-
-
+    taskIIC()
