@@ -81,33 +81,58 @@ def taskIIB():
 # Task II. C. Multi-byte XOR
 def taskIIC():
     with open('Lab0.TaskII.C.txt', 'rb') as file:
-        encrypted_data = base642bytes(file.read().strip())
+        encrypted_data = file.read().strip()
+   
+    keys = []
+    for byte1 in range(256):
+        key1 = bytes([byte1])
+        keys.append(key1)
 
-    def collect_ioc_scores():
-        potentials = []
+        for byte2 in range(256):
+            key2 = bytes([byte1, byte2])
+            keys.append(key2)
 
-        for key_length in range(1, len(encrypted_data)):
-            for start_index in range(key_length):
-                key = bytes([encrypted_data[i] for i in range(start_index, len(encrypted_data), key_length)])
-                
-                decrypted_data = xor_strings(encrypted_data, key)
-                try:
-                    decrypted_data = decrypted_data.decode('utf-8')
+            # for byte3 in range(256):
+            #     key3 = bytes([byte1, byte2, byte3])
+            #     keys.append(key3)
 
-                    score = getIOC(decrypted_data)
+    potentials = []
+    scores = []
 
-                    if score > 0:
-                        potentials.append((decrypted_data, score, key))
-                except UnicodeDecodeError:
-                    continue 
+    for key in keys: 
+        decrypted = xor_strings(encrypted_data, key)
 
-        return potentials
+        try:
+            # plaintext = bytes2base64(decrypted)
+            plaintext = decrypted.decode('ascii')
+            
 
-    potentials = collect_ioc_scores()
+            score = getIOC(plaintext)
+            scores.append(score)
+
+            if score > 0.5:
+                potentials.append((plaintext, score, key))
+        except UnicodeDecodeError:
+            continue 
+
     print(len(potentials))
+    plt.hist(scores, bins=50, alpha=0.75, color='b')
+    plt.xlabel('Score')
+    plt.ylabel('Frequency')
+    plt.title('Distribution of Scores')
+    plt.grid(True)
+    plt.show()
+
+    potentials.sort(key=lambda x: abs(x[1] - ioc_expected))
+    potentials = potentials[:20]
 
     for text, ioc, key in potentials:
         print(f"Decrypted text: {text}, Key: {key}, IOC: {ioc}")
+
+# Task II. D. Vigenère Cipher
+def temp():
+    return 
+
 
 if __name__ == "__main__": 
     # # ----- Task I. testing 

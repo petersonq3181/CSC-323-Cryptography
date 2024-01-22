@@ -33,14 +33,15 @@ def taskIIC():
 
     potentials = []
 
-    for key_len in range(1, 4):  # Try different key lengths
+    for key_len in range(1, 2):  # Try different key lengths
         for key_candidate in itertools.product(range(256), repeat=key_len):
             key = bytes(key_candidate)
             decrypted = xor_strings(encrypted_data, key)
             
             try:
-                plaintext = decrypted.decode('utf-8')
+                plaintext = decrypted.decode('utf-16')
                 ioc = getIOC(plaintext)
+                print(ioc)
                 if ioc > 1.5 and ioc < 2.0:  # You can adjust the IOC range as needed
                     potentials.append((plaintext, ioc, key))
             except UnicodeDecodeError:
