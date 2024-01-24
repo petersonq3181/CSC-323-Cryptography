@@ -92,9 +92,9 @@ def taskIIC():
             key2 = bytes([byte1, byte2])
             keys.append(key2)
 
-            # for byte3 in range(256):
-            #     key3 = bytes([byte1, byte2, byte3])
-            #     keys.append(key3)
+            for byte3 in range(256):
+                key3 = bytes([byte1, byte2, byte3])
+                keys.append(key3)
 
     potentials = []
     scores = []
