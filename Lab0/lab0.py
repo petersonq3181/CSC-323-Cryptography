@@ -62,7 +62,6 @@ def taskIIB():
 
         for key in range(256):  
             decrypted = xor_strings(byte_data, bytes([key]))
-            # print(type(decrypted), decrypted)
             try:
                 plaintext = decrypted.decode('utf-8')
                 print('ayoo: ', type(plaintext), plaintext)
@@ -79,9 +78,11 @@ def taskIIB():
         print(f"Decrypted text: {text}, Key: {key}, IOC: {ioc}")
 
 # Task II. C. Multi-byte XOR
+# plaintext --> plaintext ascii encoded --> XOR --> ciphertext --> base64 encoded --> ciphertext 
+# ciphertext --> base64 decode --> ciphertext --> XOR --> plaintext ascii encoded --> ascii decode --> plaintext 
 def taskIIC():
     with open('Lab0.TaskII.C.txt', 'rb') as file:
-        encrypted_data = file.read().strip()
+        encrypted_data = base642bytes(file.read().strip())
    
     keys = []
     for byte1 in range(256):
@@ -92,9 +93,9 @@ def taskIIC():
             key2 = bytes([byte1, byte2])
             keys.append(key2)
 
-            for byte3 in range(256):
-                key3 = bytes([byte1, byte2, byte3])
-                keys.append(key3)
+            # for byte3 in range(256):
+            #     key3 = bytes([byte1, byte2, byte3])
+            #     keys.append(key3)
 
     potentials = []
     scores = []
@@ -104,9 +105,8 @@ def taskIIC():
 
         try:
             # plaintext = bytes2base64(decrypted)
-            plaintext = decrypted.decode('ascii')
+            plaintext = decrypted.decode('ascii', errors='ignore')
             
-
             score = getIOC(plaintext)
             scores.append(score)
 
