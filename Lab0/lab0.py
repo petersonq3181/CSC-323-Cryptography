@@ -1,11 +1,7 @@
 import base64
 import binascii
 from collections import Counter
-import itertools
-from langdetect import detect
 import matplotlib.pyplot as plt
-import numpy as np
-
 
 
 # Task I. A. Implement Common Encoders & Decoders
@@ -51,106 +47,26 @@ def getIOC(s):
     IOC = float(total) / ((N * (N - 1)) / c)
     return IOC
 
-def taskIIB():
-    with open('Lab0.TaskII.B.txt', 'r') as file:
-        hex_strings = file.readlines()
+with open('Lab0.TaskII.B.txt', 'r') as file:
+    hex_strings = file.readlines()
 
-    potentials = []
+potentials = []
 
-    for hex_str in hex_strings:
-        byte_data = binascii.unhexlify(hex_str.strip())
+for hex_str in hex_strings:
+    byte_data = binascii.unhexlify(hex_str.strip())
 
-        for key in range(256):  
-            decrypted = xor_strings(byte_data, bytes([key]))
-            try:
-                plaintext = decrypted.decode('utf-8')
-                ioc = getIOC(plaintext)
-                if ioc > 0:  
-                    potentials.append((plaintext, ioc, key))
-            except UnicodeDecodeError:
-                continue
-
-    potentials.sort(key=lambda x: abs(x[1] - ioc_expected))
-    top_plaintexts = potentials[:5]
-
-    for text, ioc, key in top_plaintexts:
-        print(f"Decrypted text: {text}, Key: {key}, IOC: {ioc}")
-
-# Task II. C. Multi-byte XOR
-# plaintext --> plaintext ascii encoded --> XOR --> ciphertext --> base64 encoded --> ciphertext 
-# ciphertext --> base64 decode --> ciphertext --> XOR --> plaintext ascii encoded --> ascii decode --> plaintext 
-def taskIIC():
-    with open('Lab0.TaskII.C.txt', 'rb') as file:
-        encrypted_data = base642bytes(file.read().strip())
-   
-    keys = []
-    for byte1 in range(256):
-        key1 = bytes([byte1])
-        keys.append(key1)
-
-        for byte2 in range(256):
-            key2 = bytes([byte1, byte2])
-            keys.append(key2)
-
-            # for byte3 in range(256):
-            #     key3 = bytes([byte1, byte2, byte3])
-            #     keys.append(key3)
-
-    potentials = []
-    scores = []
-
-    for key in keys: 
-        decrypted = xor_strings(encrypted_data, key)
-
+    for key in range(256):  
+        decrypted = xor_strings(byte_data, bytes([key]))
         try:
-            # plaintext = bytes2base64(decrypted)
-            plaintext = decrypted.decode('ascii', errors='ignore')
-            
-            score = getIOC(plaintext)
-            scores.append(score)
-
-            if score > 0.5:
-                potentials.append((plaintext, score, key))
+            plaintext = decrypted.decode('utf-8')
+            ioc = getIOC(plaintext)
+            if ioc > 0:  
+                potentials.append((plaintext, ioc, key))
         except UnicodeDecodeError:
-            continue 
+            continue
 
-    print(len(potentials))
-    plt.hist(scores, bins=50, alpha=0.75, color='b')
-    plt.xlabel('Score')
-    plt.ylabel('Frequency')
-    plt.title('Distribution of Scores')
-    plt.grid(True)
-    plt.show()
+potentials.sort(key=lambda x: abs(x[1] - ioc_expected))
+top_plaintexts = potentials[:5]
 
-    potentials.sort(key=lambda x: abs(x[1] - ioc_expected))
-    potentials = potentials[:20]
-
-    for text, ioc, key in potentials:
-        print(f"Decrypted text: {text}, Key: {key}, IOC: {ioc}")
-
-
-
-
-# Task II. D. Vigenère Cipher
-def temp():
-    return 
-
-
-if __name__ == "__main__": 
-    # # ----- Task I. testing 
-    # byte_string = b"Hello, world!"
-    # hex_string = bytes2hex(byte_string)
-    # print("Hex Encoded:", hex_string)
-    # decoded_bytes = hex2bytes(hex_string)
-    # print("Decoded Bytes:", decoded_bytes)
-
-    # base64_str = bytes2base64(byte_string)
-    # print("Base64 Encoded:", base64_str)
-    # decoded_bytes = base642bytes(base64_str)
-    # print("Decoded Bytes:", decoded_bytes)
-
-    # # ----- Task II. testing 
-    # res = xor_strings(b'hello', b'key')
-    # print("xor_strings result:", res)
-
-    taskIIB()
+for text, ioc, key in top_plaintexts:
+    print(f"Decrypted text: {text}, Key: {key}, IOC: {ioc}")

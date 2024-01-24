@@ -94,7 +94,6 @@ def decrypt(ciphertext, key):
         plaintext += ALPHABET[c]
     return plaintext
 
-# # encrypted then ascii encoded, or ascii encoded then encrypted ? 
 
 # test in 
 # with open('test.txt', 'rb') as file:
@@ -104,9 +103,6 @@ def decrypt(ciphertext, key):
 # ciphertext = encrypt(plaintext.upper(), key.upper())
 
 # # print(ciphertext)
-
-
-
 
 
 
@@ -168,14 +164,14 @@ key = ['M', 'O', 'M', 'O', 'N', 'E', 'Y', 'M', 'O', 'P', 'R', 'O', 'B', 'S']
 # fit = -99  # Initialize with a large negative number
 
 while fit < -12:
-    K = key[:]  # Create a copy of the current key
-    x = randrange(period)  # Randomly select a position from 9 to 13 (inclusive)
+    K = key[:]  
+    x = randrange(period) 
     for i in range(26):
         K[x] = ALPHABET[i]
         pt = decrypt(ciphertext, K)
         F = fitness(pt, tetrafrequencies)
         if F > fit:
-            key = K[:]  # Update the key if a better fitness score is found
+            key = K[:] 
             fit = F
 
     print(fit)
