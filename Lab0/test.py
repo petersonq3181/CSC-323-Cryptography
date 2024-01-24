@@ -158,17 +158,34 @@ print('got here')
 
 key = ['A']*period
 fit = -99 # some large negative number
-while fit < -14.344925306242597:
-    K = key[:]
-    x = randrange(period)
+# -14.344925306242597
+# -13.958128077236223
+# -13.89408882645154
+# -13.673341482702112
+# -13.942304511606716
+key = ['M', 'O', 'M', 'O', 'N', 'E', 'Y', 'M', 'O', 'P', 'R', 'O', 'B', 'S']
+# key = ['M', 'O', 'M', 'O', 'N', 'E', 'Y'] + ['A'] * (period - len('MOMONEY'))
+# fit = -99  # Initialize with a large negative number
+
+while fit < -12:
+    K = key[:]  # Create a copy of the current key
+    x = randrange(period)  # Randomly select a position from 9 to 13 (inclusive)
     for i in range(26):
         K[x] = ALPHABET[i]
-        pt = decrypt(ciphertext,K)
+        pt = decrypt(ciphertext, K)
         F = fitness(pt, tetrafrequencies)
-        if (F > fit):
-            key = K[:]
+        if F > fit:
+            key = K[:]  # Update the key if a better fitness score is found
             fit = F
 
     print(fit)
+    print(key)  
+
 plaintext = decrypt(ciphertext,key)
 print(plaintext)
+
+
+'''
+KEY = MOMONEYMOPROBS
+BIGPOPPANOINFOFORTHEDEAFEDERALAGENTSMADCAUSEIMFLAGRANTTAPMYCELLANDTHEPHONEINTHEBASEMENTMYTEAMSUPREMESTAYCLEANTRIPLEBEAMLYRICALDREAMIBETHATCATYOUSEEATALLEVENTSBENTGATSINHOLSTERSGIRLSONSHOULDERSPLAYBOYITOLDYAMEREMICSTOMEBRUISETOOMUCHILOSETOOMUCHSTEPONSTAGETHEGIRLSBOOTOOMUCHIGUESSITSCAUSEYOURUNWITHLAMEDUDESTOOMUCHMELOSEMYTOUCHNEVERTHATIFIDIDAINTNOPROBLEMTOGETTHEGATWHERETHETRUEPLAYERSATTHROWYOURROLIESINTHESKYWAVEEMSIDETOSIDEANDKEEPYOURHANDSHIGHWHILEIGIVEYOURGIRLTHEEYEPLAYERPLEASELYRICALLYFELLASSEEBIGBEFLOSSINGJIGONTHECOVEROFFORTUNEDOUBLEOHERESMYPHONENUMBERYOURMANAINTGOTTOKNOWIGOTTHEDOUGHGOTTHEFLOWDOWNPIZATPLATINUMPLUSLIKETHIZATDANGEROUSONTRIZACKSLEAVEYOURASSFLIZAT
+'''
