@@ -30,34 +30,6 @@ def index_of_coincidence(text):
         total += counts[i]
     return 26*numer / (total*(total-1))
 
-def get_tetrafrequencies(text): 
-    tetrafrequencies = [0]*26*26*26*26
-    for i in range(len(text) - 3):
-        x = (ALPHABET.index(text[i])*26*26*26 +
-        ALPHABET.index(text[i+1])*26*26 +
-        ALPHABET.index(text[i+2])*26 +
-        ALPHABET.index(text[i+3]))
-        tetrafrequencies[x] += 1
-    for i in range(26*26*26*26):
-        tetrafrequencies[i] = tetrafrequencies[i] / (len(text)-3)
-    return tetrafrequencies
-
-def fitness(text, tetrafrequencies):
-    result = 0
-    for i in range(len(text)-3):
-        tetragram = text[i:i+4]
-        x = (ALPHABET.index(tetragram[0])*26*26*26 +
-        ALPHABET.index(tetragram[1])*26*26 +
-        ALPHABET.index(tetragram[2])*26 +
-        ALPHABET.index(tetragram[3]))
-        y = tetrafrequencies[x]
-        if y == 0:
-            result += -15
-        else:
-            result += log(y)
-    result = result / (len(text) - 3)
-    return result
-
 def analyze_ciphertext_for_key_lengths(ciphertext, max_key_length):
     key_lengths = []
     avg_iocs = [] 
@@ -96,12 +68,12 @@ def decrypt(ciphertext, key):
 
 # # encrypted then ascii encoded, or ascii encoded then encrypted ? 
 
-# test in 
+# # test in 
 # with open('test.txt', 'rb') as file:
 #     english_text = file.read().strip().decode('ascii')
 
-# key = 'ydhxk'
-# ciphertext = encrypt(plaintext.upper(), key.upper())
+# key = 'ydhxkxx'
+# ciphertext = encrypt(english_text.upper(), key.upper())
 
 # # print(ciphertext)
 
@@ -115,57 +87,38 @@ with open('Lab0.TaskII.D.txt', 'rb') as file:
 
 print(len(ciphertext))
    
-# key_lengths, avg_iocs = analyze_ciphertext_for_key_lengths(ciphertext, 40)
+key_lengths, avg_iocs = analyze_ciphertext_for_key_lengths(ciphertext, 40)
 
-# # Plotting
-# plt.bar(key_lengths, avg_iocs)
-# plt.xlabel('Key Length (Period)')
-# plt.ylabel('Average IOC')
-# plt.title('Average IOC vs Key Length')
-# plt.xticks(range(1, len(key_lengths) + 1))  # Set x-ticks to be every key length
-# plt.ylim(0, 2.5)  # Set the limits of y-axis
-# plt.grid(True)  # Enable gridlines
-# plt.show()
 
-period = 7
+# Plotting
+plt.bar(key_lengths, avg_iocs)
+plt.xlabel('Key Length (Period)')
+plt.ylabel('Average IOC')
+plt.title('Average IOC vs Key Length')
+plt.xticks(range(1, len(key_lengths) + 1))  # Set x-ticks to be every key length
+plt.ylim(0, 2.5)  # Set the limits of y-axis
+plt.grid(True)  # Enable gridlines
+plt.show()
 
-# slices = [ciphertext[i::period] for i in range(period)]
 
-# frequencies = []
-# for i in range(period):
-#     frequencies.append([0]*26)
-#     for j in range(len(slices[i])):
-#         frequencies[i][ALPHABET.index(slices[i][j])] += 1
-#     for j in range(26):
-#         frequencies[i][j] = frequencies[i][j] / len(slices[i])
+period = 14
+
+slices = [ciphertext[i::period] for i in range(period)]
+
+frequencies = []
+for i in range(period):
+    frequencies.append([0]*26)
+    for j in range(len(slices[i])):
+        frequencies[i][ALPHABET.index(slices[i][j])] += 1
+    for j in range(26):
+        frequencies[i][j] = frequencies[i][j] / len(slices[i])
         
-# key = ['A']*period
-# for i in range(period):
-#     for j in range(26):
-#         testtable = frequencies[i][j:]+frequencies[i][:j]
-#         if cosangle(english_freqs_list, testtable) > 0.9:
-#             key[i] = ALPHABET[j]
-
-# plaintext = decrypt(ciphertext, key)
-# print(plaintext)
-
-
-with open('test.txt', 'rb') as file:
-    english_text = file.read().strip().decode('ascii')
-tetrafrequencies = get_tetrafrequencies(english_text)
-
-print('got here')
-
 key = ['A']*period
-fit = -99 # some large negative number
-while fit < -10:
-    K = key[:]
-    x = randrange(period)
-    for i in range(26):
-        K[x] = ALPHABET[i]
-        pt = decrypt(ciphertext,K)
-        F = fitness(pt, tetrafrequencies)
-        if (F > fit):
-            key = K[:]
-            fit = F
-plaintext = decrypt(ciphertext,key)
+for i in range(period):
+    for j in range(26):
+        testtable = frequencies[i][j:]+frequencies[i][:j]
+        if cosangle(english_freqs_list, testtable) > 0.9:
+            key[i] = ALPHABET[j]
+
+plaintext = decrypt(ciphertext, key)
+print(plaintext)
