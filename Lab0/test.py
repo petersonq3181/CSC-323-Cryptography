@@ -11,6 +11,7 @@ def xor_strings(s, key):
 
 ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 english_freqs = {'e': 12.7, 't': 9.1, 'a': 8.2, 'o': 7.5, 'i': 7.0, 'n': 6.7, 's': 6.3, 'h': 6.1, 'r': 6.0, 'd': 4.3, 'l': 4.0, 'u': 2.8, 'w': 2.4, 'm': 2.4, 'f': 2.2, 'c': 2.2, 'g': 2.0, 'y': 2.0, 'p': 1.9, 'b': 1.5, 'k': 1.3, 'v': 1.0, 'j': 0.2, 'x': 0.2, 'q': 0.1, 'z': 0.1}
+english_freqs_list = [english_freqs[char.lower()] for char in ALPHABET]
 
 def index_of_coincidence(text):
     text = ''.join([char.upper() for char in text if char.upper() in ALPHABET])
@@ -25,23 +26,40 @@ def index_of_coincidence(text):
     return 26*numer / (total*(total-1))
 
 def analyze_ciphertext_for_key_lengths(ciphertext, max_key_length):
-    ioc_data = []
+    key_lengths = []
+    avg_iocs = [] 
     for key_length in range(1, max_key_length + 1):
         groups = [ciphertext[i::key_length] for i in range(key_length)]
         group_iocs = [index_of_coincidence(group) for group in groups]
         avg_ioc = sum(group_iocs) / len(group_iocs)
-        ioc_data.append((key_length, avg_ioc))
-    return ioc_data
+
+        key_lengths.append(key_length)
+        avg_iocs.append(avg_ioc)
+    return key_lengths, avg_iocs
+
+def cosangle(x, y):
+    numerator = sum(xi * yi for xi, yi in zip(x, y))
+    lengthx2 = sum(xi ** 2 for xi in x)
+    lengthy2 = sum(yi ** 2 for yi in y)
+    return numerator / sqrt(lengthx2 * lengthy2)
+
+def decrypt(ciphertext, key):
+    plaintext = ''
+    for i in range(len(ciphertext)):
+        p = ALPHABET.index(ciphertext[i])
+        k = ALPHABET.index(key[i%len(key)])
+        c = (p - k) % 26
+        plaintext += ALPHABET[c]
+    return plaintext
+
+
 
 with open('Lab0.TaskII.D.txt', 'rb') as file:
     ciphertext = file.read().strip().decode('ascii')
 
 print(len(ciphertext))
    
-ioc_data = analyze_ciphertext_for_key_lengths(ciphertext, 40)
-
-# Unzip the data
-key_lengths, avg_iocs = zip(*ioc_data )
+key_lengths, avg_iocs = analyze_ciphertext_for_key_lengths(ciphertext, 40)
 
 # Plotting
 plt.bar(key_lengths, avg_iocs)
@@ -57,15 +75,6 @@ period = 7
 
 slices = [ciphertext[i::period] for i in range(period)]
 
-def cosangle(x, y):
-    numerator = sum(xi * yi for xi, yi in zip(x, y))
-    lengthx2 = sum(xi ** 2 for xi in x)
-    lengthy2 = sum(yi ** 2 for yi in y)
-    return numerator / sqrt(lengthx2 * lengthy2)
-
-# Convert english_freqs to a list matching the order of ALPHABET
-english_freqs_list = [english_freqs[char.lower()] for char in ALPHABET]
-
 frequencies = []
 for i in range(period):
     frequencies.append([0]*26)
@@ -80,11 +89,6 @@ for i in range(period):
         testtable = frequencies[i][j:]+frequencies[i][:j]
         if cosangle(english_freqs_list, testtable) > 0.9:
             key[i] = ALPHABET[j]
-    plaintext = xor_strings(ciphertext.encode('utf-8'), ''.join(key).encode('utf-8'))
-    print(type(plaintext))
-    print(plaintext)
-    print(plaintext.decode('utf-8', 'replace'))
-    # hex_representation = plaintext.hex()
-    # print(hex_representation)
-    # print(gg)
-    print()
+
+plaintext = decrypt(ciphertext,key)
+print(plaintext)
