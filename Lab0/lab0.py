@@ -64,7 +64,6 @@ def taskIIB():
             decrypted = xor_strings(byte_data, bytes([key]))
             try:
                 plaintext = decrypted.decode('utf-8')
-                print('ayoo: ', type(plaintext), plaintext)
                 ioc = getIOC(plaintext)
                 if ioc > 0:  
                     potentials.append((plaintext, ioc, key))
@@ -129,6 +128,9 @@ def taskIIC():
     for text, ioc, key in potentials:
         print(f"Decrypted text: {text}, Key: {key}, IOC: {ioc}")
 
+
+
+
 # Task II. D. Vigenère Cipher
 def temp():
     return 
@@ -151,4 +153,4 @@ if __name__ == "__main__":
     # res = xor_strings(b'hello', b'key')
     # print("xor_strings result:", res)
 
-    taskIIC()
+    taskIIB()
