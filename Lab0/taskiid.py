@@ -1,15 +1,8 @@
-from collections import Counter
 from math import log, sqrt
 import matplotlib.pyplot as plt
 from random import randrange
-import string 
 
-def xor_strings(s, key):
-    repeated_key = (key * (len(s) // len(key) + 1))[:len(s)]
-    return bytes([input_byte ^ key_byte for input_byte, key_byte in zip(s, repeated_key)])
-
-
-# help from here: https://www.cipherchallenge.org/wp-content/uploads/2020/12/Five-ways-to-crack-a-Vigenere-cipher.pdf
+# Used code from here https://www.cipherchallenge.org/wp-content/uploads/2020/12/Five-ways-to-crack-a-Vigenere-cipher.pdf
 # NOTE: states the stats-only attack t is only reliable for
 # ciphertexts that are at least 100 times as long as the period
 # (found period = 7, ciphertext length = 668 )

@@ -51,5 +51,3 @@ potentials = potentials[:20]
 
 for text, ioc, key in potentials:
     print(f"Decrypted text: {text}, Key: {key}, IOC: {ioc}")
-
-
