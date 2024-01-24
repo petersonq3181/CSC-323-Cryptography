@@ -43,6 +43,15 @@ def cosangle(x, y):
     lengthy2 = sum(yi ** 2 for yi in y)
     return numerator / sqrt(lengthx2 * lengthy2)
 
+def encrypt(plaintext,key):
+    ciphertext = ''
+    for i in range(len(plaintext)):
+        p = ALPHABET.index(plaintext[i])
+        k = ALPHABET.index(key[i%len(key)])
+        c = (p + k) % 26
+        ciphertext += ALPHABET[c]
+    return ciphertext
+
 def decrypt(ciphertext, key):
     plaintext = ''
     for i in range(len(ciphertext)):
@@ -52,10 +61,24 @@ def decrypt(ciphertext, key):
         plaintext += ALPHABET[c]
     return plaintext
 
+# encrypted then ascii encoded, or ascii encoded then encrypted ? 
+
+# test in 
+with open('test.txt', 'rb') as file:
+    plaintext = file.read().strip().decode('ascii')
+
+key = 'ydhxk'
+ciphertext = encrypt(plaintext.upper(), key.upper())
+
+print(ciphertext)
 
 
-with open('Lab0.TaskII.D.txt', 'rb') as file:
-    ciphertext = file.read().strip().decode('ascii')
+
+
+
+
+# with open('Lab0.TaskII.D.txt', 'rb') as file:
+#     ciphertext = file.read().strip().decode('ascii')
 
 print(len(ciphertext))
    
@@ -71,7 +94,7 @@ plt.ylim(0, 2.5)  # Set the limits of y-axis
 plt.grid(True)  # Enable gridlines
 plt.show()
 
-period = 7 
+period = 5
 
 slices = [ciphertext[i::period] for i in range(period)]
 
