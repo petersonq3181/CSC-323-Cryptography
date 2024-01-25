@@ -25,6 +25,7 @@ def index_of_coincidence(text):
         return 0
     return 26*numer / (total*(total-1))
 
+# frequencies of various 4-letter combos in English text 
 def get_tetrafrequencies(text): 
     tetrafrequencies = [0]*26*26*26*26
     for i in range(len(text) - 3):
@@ -37,6 +38,7 @@ def get_tetrafrequencies(text):
         tetrafrequencies[i] = tetrafrequencies[i] / (len(text)-3)
     return tetrafrequencies
 
+# compare freqencies of tetragrams 
 def fitness(text, tetrafrequencies):
     result = 0
     for i in range(len(text)-3):
@@ -53,6 +55,7 @@ def fitness(text, tetrafrequencies):
     result = result / (len(text) - 3)
     return result
 
+# avg ioc for each group of ciphertext, when split for various repeating key lengths 
 def analyze_ciphertext_for_key_lengths(ciphertext, max_key_length):
     key_lengths = []
     avg_iocs = [] 
@@ -65,21 +68,7 @@ def analyze_ciphertext_for_key_lengths(ciphertext, max_key_length):
         avg_iocs.append(avg_ioc)
     return key_lengths, avg_iocs
 
-def cosangle(x, y):
-    numerator = sum(xi * yi for xi, yi in zip(x, y))
-    lengthx2 = sum(xi ** 2 for xi in x)
-    lengthy2 = sum(yi ** 2 for yi in y)
-    return numerator / sqrt(lengthx2 * lengthy2)
-
-def encrypt(plaintext,key):
-    ciphertext = ''
-    for i in range(len(plaintext)):
-        p = ALPHABET.index(plaintext[i])
-        k = ALPHABET.index(key[i%len(key)])
-        c = (p + k) % 26
-        ciphertext += ALPHABET[c]
-    return ciphertext
-
+# vigenere decryption 
 def decrypt(ciphertext, key):
     plaintext = ''
     for i in range(len(ciphertext)):
@@ -101,6 +90,7 @@ if __name__ == "__main__":
     print(len(ciphertext))
     print(type(ciphertext))
     
+    # # plotting key_length vs. avg ioc, to get period and likely key length (found to be 14)
     # key_lengths, avg_iocs = analyze_ciphertext_for_key_lengths(ciphertext, 40)
 
     # # Plotting
@@ -115,12 +105,11 @@ if __name__ == "__main__":
 
     period = 14
 
-
+    # read in lots of english text to generate some tetrafrequencies for english 
+    # (from here: https://en.wikipedia.org/wiki/History_of_England)
     with open('test.txt', 'rb') as file:
         english_text = file.read().strip().decode('ascii')
     tetrafrequencies = get_tetrafrequencies(english_text)
-
-    print('got here')
 
     key = ['A']*period
     fit = -99 # some large negative number

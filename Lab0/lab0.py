@@ -25,8 +25,10 @@ def xor_strings(s, key):
 
 
 # Task II. B. Single-byte XOR
-# Decrypted text: Out on bail, fresh out of jail, California dreaming
-# Soon as I step on the scene, I'm hearing ladies screaming, Key: 127, IOC: 1.0292218824328916
+''' 
+Decrypted text: Out on bail, fresh out of jail, California dreaming
+Soon as I step on the scene, I'm hearing ladies screaming, Key: 127, IOC: 1.0292218824328916
+'''
 
 # IC expected for English is 1.73
 # English typically falls in range 1.5 to 2.0
