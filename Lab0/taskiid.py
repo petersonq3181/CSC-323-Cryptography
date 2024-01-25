@@ -21,6 +21,8 @@ def index_of_coincidence(text):
     for i in range(26):
         numer += counts[i]*(counts[i]-1)
         total += counts[i]
+    if total <= 1:
+        return 0
     return 26*numer / (total*(total-1))
 
 def get_tetrafrequencies(text): 
