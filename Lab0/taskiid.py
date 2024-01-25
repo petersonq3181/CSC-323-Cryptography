@@ -87,94 +87,63 @@ def decrypt(ciphertext, key):
         plaintext += ALPHABET[c]
     return plaintext
 
-
-# test in 
-# with open('test.txt', 'rb') as file:
-#     english_text = file.read().strip().decode('ascii')
-
-# key = 'ydhxk'
-# ciphertext = encrypt(plaintext.upper(), key.upper())
-
-# # print(ciphertext)
-
-
-
-with open('Lab0.TaskII.D.txt', 'rb') as file:
-    ciphertext = file.read().strip().decode('ascii')
-
-print(len(ciphertext))
-   
-# key_lengths, avg_iocs = analyze_ciphertext_for_key_lengths(ciphertext, 40)
-
-# # Plotting
-# plt.bar(key_lengths, avg_iocs)
-# plt.xlabel('Key Length (Period)')
-# plt.ylabel('Average IOC')
-# plt.title('Average IOC vs Key Length')
-# plt.xticks(range(1, len(key_lengths) + 1))  # Set x-ticks to be every key length
-# plt.ylim(0, 2.5)  # Set the limits of y-axis
-# plt.grid(True)  # Enable gridlines
-# plt.show()
-
-period = 14
-
-# slices = [ciphertext[i::period] for i in range(period)]
-
-# frequencies = []
-# for i in range(period):
-#     frequencies.append([0]*26)
-#     for j in range(len(slices[i])):
-#         frequencies[i][ALPHABET.index(slices[i][j])] += 1
-#     for j in range(26):
-#         frequencies[i][j] = frequencies[i][j] / len(slices[i])
-        
-# key = ['A']*period
-# for i in range(period):
-#     for j in range(26):
-#         testtable = frequencies[i][j:]+frequencies[i][:j]
-#         if cosangle(english_freqs_list, testtable) > 0.9:
-#             key[i] = ALPHABET[j]
-
-# plaintext = decrypt(ciphertext, key)
-# print(plaintext)
-
-
-with open('test.txt', 'rb') as file:
-    english_text = file.read().strip().decode('ascii')
-tetrafrequencies = get_tetrafrequencies(english_text)
-
-print('got here')
-
-key = ['A']*period
-fit = -99 # some large negative number
-# -14.344925306242597
-# -13.958128077236223
-# -13.89408882645154
-# -13.673341482702112
-# -13.942304511606716
-key = ['M', 'O', 'M', 'O', 'N', 'E', 'Y', 'M', 'O', 'P', 'R', 'O', 'B', 'S']
-# key = ['M', 'O', 'M', 'O', 'N', 'E', 'Y'] + ['A'] * (period - len('MOMONEY'))
-# fit = -99  # Initialize with a large negative number
-
-while fit < -12:
-    K = key[:]  
-    x = randrange(period) 
-    for i in range(26):
-        K[x] = ALPHABET[i]
-        pt = decrypt(ciphertext, K)
-        F = fitness(pt, tetrafrequencies)
-        if F > fit:
-            key = K[:] 
-            fit = F
-
-    print(fit)
-    print(key)  
-
-plaintext = decrypt(ciphertext,key)
-print(plaintext)
-
-
 '''
 KEY = MOMONEYMOPROBS
 BIGPOPPANOINFOFORTHEDEAFEDERALAGENTSMADCAUSEIMFLAGRANTTAPMYCELLANDTHEPHONEINTHEBASEMENTMYTEAMSUPREMESTAYCLEANTRIPLEBEAMLYRICALDREAMIBETHATCATYOUSEEATALLEVENTSBENTGATSINHOLSTERSGIRLSONSHOULDERSPLAYBOYITOLDYAMEREMICSTOMEBRUISETOOMUCHILOSETOOMUCHSTEPONSTAGETHEGIRLSBOOTOOMUCHIGUESSITSCAUSEYOURUNWITHLAMEDUDESTOOMUCHMELOSEMYTOUCHNEVERTHATIFIDIDAINTNOPROBLEMTOGETTHEGATWHERETHETRUEPLAYERSATTHROWYOURROLIESINTHESKYWAVEEMSIDETOSIDEANDKEEPYOURHANDSHIGHWHILEIGIVEYOURGIRLTHEEYEPLAYERPLEASELYRICALLYFELLASSEEBIGBEFLOSSINGJIGONTHECOVEROFFORTUNEDOUBLEOHERESMYPHONENUMBERYOURMANAINTGOTTOKNOWIGOTTHEDOUGHGOTTHEFLOWDOWNPIZATPLATINUMPLUSLIKETHIZATDANGEROUSONTRIZACKSLEAVEYOURASSFLIZAT
 '''
+
+if __name__ == "__main__":
+    with open('Lab0.TaskII.D.txt', 'rb') as file:
+        ciphertext = file.read().strip().decode('ascii')
+
+    print(len(ciphertext))
+    print(type(ciphertext))
+    
+    # key_lengths, avg_iocs = analyze_ciphertext_for_key_lengths(ciphertext, 40)
+
+    # # Plotting
+    # plt.bar(key_lengths, avg_iocs)
+    # plt.xlabel('Key Length (Period)')
+    # plt.ylabel('Average IOC')
+    # plt.title('Average IOC vs Key Length')
+    # plt.xticks(range(1, len(key_lengths) + 1))  # Set x-ticks to be every key length
+    # plt.ylim(0, 2.5)  # Set the limits of y-axis
+    # plt.grid(True)  # Enable gridlines
+    # plt.show()
+
+    period = 14
+
+
+    with open('test.txt', 'rb') as file:
+        english_text = file.read().strip().decode('ascii')
+    tetrafrequencies = get_tetrafrequencies(english_text)
+
+    print('got here')
+
+    key = ['A']*period
+    fit = -99 # some large negative number
+    # -14.344925306242597
+    # -13.958128077236223
+    # -13.89408882645154
+    # -13.673341482702112
+    # -13.942304511606716
+    key = ['M', 'O', 'M', 'O', 'N', 'E', 'Y', 'M', 'O', 'P', 'R', 'O', 'B', 'S']
+    # key = ['M', 'O', 'M', 'O', 'N', 'E', 'Y'] + ['A'] * (period - len('MOMONEY'))
+    # fit = -99  # Initialize with a large negative number
+
+    while fit < -12:
+        K = key[:]  
+        x = randrange(period) 
+        for i in range(26):
+            K[x] = ALPHABET[i]
+            pt = decrypt(ciphertext, K)
+            F = fitness(pt, tetrafrequencies)
+            if F > fit:
+                key = K[:] 
+                fit = F
+
+        print(fit)
+        print(key)  
+
+    plaintext = decrypt(ciphertext,key)
+    print(plaintext)

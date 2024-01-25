@@ -1,53 +1,52 @@
-from lab0 import base642bytes, xor_strings, getIOC
-from matplotlib import plt
+from lab0 import base642bytes
+import matplotlib.pyplot as plt
+
+
+def analyze_ciphertext_for_key_lengths(ciphertext, max_key_length):
+    key_lengths = []
+    avg_iocs = [] 
+    for key_length in range(1, max_key_length + 1):
+        groups = [ciphertext[i::key_length] for i in range(key_length)]
+        group_iocs = [index_of_coincidence(group) for group in groups]
+        avg_ioc = sum(group_iocs) / len(group_iocs)
+
+        key_lengths.append(key_length)
+        avg_iocs.append(avg_ioc)
+    return key_lengths, avg_iocs
+
+def index_of_coincidence(bytes_seq):
+    counts = [0] * 256
+    total = len(bytes_seq)
+
+    if total <= 1:
+        return 0
+
+    for byte in bytes_seq:
+        counts[byte] += 1
+
+    numer = sum(count * (count - 1) for count in counts)
+    return numer / (total * (total - 1))
+
 
 # Task II. C. Multi-byte XOR
 # plaintext --> plaintext ascii encoded --> XOR --> ciphertext --> base64 encoded --> ciphertext 
 # ciphertext --> base64 decode --> ciphertext --> XOR --> plaintext ascii encoded --> ascii decode --> plaintext 
 with open('Lab0.TaskII.C.txt', 'rb') as file:
-    encrypted_data = base642bytes(file.read().strip())
+    ciphertext = base642bytes(file.read().strip())
 
-keys = []
-for byte1 in range(256):
-    key1 = bytes([byte1])
-    keys.append(key1)
+print(len(ciphertext))
 
-    for byte2 in range(256):
-        key2 = bytes([byte1, byte2])
-        keys.append(key2)
+key_lengths, avg_iocs = analyze_ciphertext_for_key_lengths(ciphertext, 30)
 
-        # for byte3 in range(256):
-        #     key3 = bytes([byte1, byte2, byte3])
-        #     keys.append(key3)
+for i in range(len(key_lengths)):
+    print('key_length: ', key_lengths[i], '\tavg_ioc: ', avg_iocs[i])
 
-potentials = []
-scores = []
-
-for key in keys: 
-    decrypted = xor_strings(encrypted_data, key)
-
-    try:
-        # plaintext = bytes2base64(decrypted)
-        plaintext = decrypted.decode('ascii', errors='ignore')
-        
-        score = getIOC(plaintext)
-        scores.append(score)
-
-        if score > 0.5:
-            potentials.append((plaintext, score, key))
-    except UnicodeDecodeError:
-        continue 
-
-print(len(potentials))
-plt.hist(scores, bins=50, alpha=0.75, color='b')
-plt.xlabel('Score')
-plt.ylabel('Frequency')
-plt.title('Distribution of Scores')
-plt.grid(True)
+# Plotting
+plt.bar(key_lengths, avg_iocs)
+plt.xlabel('Key Length (Period)')
+plt.ylabel('Average IOC')
+plt.title('Average IOC vs Key Length')
+plt.xticks(range(1, len(key_lengths) + 1))  # Set x-ticks to be every key length
+plt.ylim(0, 2.5)  # Set the limits of y-axis
+plt.grid(True)  # Enable gridlines
 plt.show()
-
-potentials.sort(key=lambda x: abs(x[1] - 1.7))
-potentials = potentials[:20]
-
-for text, ioc, key in potentials:
-    print(f"Decrypted text: {text}, Key: {key}, IOC: {ioc}")

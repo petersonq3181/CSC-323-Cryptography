@@ -47,26 +47,28 @@ def getIOC(s):
     IOC = float(total) / ((N * (N - 1)) / c)
     return IOC
 
-with open('Lab0.TaskII.B.txt', 'r') as file:
-    hex_strings = file.readlines()
 
-potentials = []
+if __name__ == "__main__":
+    with open('Lab0.TaskII.B.txt', 'r') as file:
+        hex_strings = file.readlines()
 
-for hex_str in hex_strings:
-    byte_data = binascii.unhexlify(hex_str.strip())
+    potentials = []
 
-    for key in range(256):  
-        decrypted = xor_strings(byte_data, bytes([key]))
-        try:
-            plaintext = decrypted.decode('utf-8')
-            ioc = getIOC(plaintext)
-            if ioc > 0:  
-                potentials.append((plaintext, ioc, key))
-        except UnicodeDecodeError:
-            continue
+    for hex_str in hex_strings:
+        byte_data = binascii.unhexlify(hex_str.strip())
 
-potentials.sort(key=lambda x: abs(x[1] - ioc_expected))
-top_plaintexts = potentials[:5]
+        for key in range(256):  
+            decrypted = xor_strings(byte_data, bytes([key]))
+            try:
+                plaintext = decrypted.decode('utf-8')
+                ioc = getIOC(plaintext)
+                if ioc > 0:  
+                    potentials.append((plaintext, ioc, key))
+            except UnicodeDecodeError:
+                continue
 
-for text, ioc, key in top_plaintexts:
-    print(f"Decrypted text: {text}, Key: {key}, IOC: {ioc}")
+    potentials.sort(key=lambda x: abs(x[1] - ioc_expected))
+    top_plaintexts = potentials[:5]
+
+    for text, ioc, key in top_plaintexts:
+        print(f"Decrypted text: {text}, Key: {key}, IOC: {ioc}")
