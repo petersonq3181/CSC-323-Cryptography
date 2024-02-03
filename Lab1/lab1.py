@@ -1,3 +1,8 @@
+import time
+import base64
+import random
+
+
 class MersenneTwister:
     def __init__(self, seed=5489):
         self.MT = [0] * 624
@@ -26,7 +31,45 @@ class MersenneTwister:
             if y % 2 != 0:
                 self.MT[i] ^= 0x9908B0DF
 
-# Example usage:
-mt = MersenneTwister(3)  # You can change the seed here
+mt = MersenneTwister(3) 
 random_number = mt.extract_number()
 print(random_number)
+
+# should be 5 and 60 
+time1 = 5
+time2 = 10
+
+def oracle():
+    time.sleep(random.randint(time1, time2))
+
+    current_timestamp = int(time.time())
+    print('Seed used: ', current_timestamp)
+    mt = MersenneTwister(current_timestamp)
+
+    time.sleep(random.randint(time1, time2))
+
+    first_output = mt.extract_number()
+    encoded_output = base64.b64encode(first_output.to_bytes(4, 'big'))
+    return encoded_output
+
+encoded_value = oracle()
+print(encoded_value)
+
+decoded_encoded_value = base64.b64decode(encoded_value)
+decoded_value = int.from_bytes(decoded_encoded_value, 'big')
+
+current_time = int(time.time())
+
+time_range = 2 * time2
+
+found_seed = None
+for possible_seed in range(current_time - time_range, current_time):
+    mt = MersenneTwister(possible_seed)
+    if mt.extract_number() == decoded_value:
+        found_seed = possible_seed
+        break
+
+if found_seed is not None:
+    print(f"Found seed: {found_seed}")
+else:
+    print("Seed not found.")
