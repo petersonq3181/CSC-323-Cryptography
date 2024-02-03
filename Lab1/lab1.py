@@ -31,10 +31,6 @@ class MersenneTwister:
             if y % 2 != 0:
                 self.MT[i] ^= 0x9908B0DF
 
-mt = MersenneTwister(3) 
-random_number = mt.extract_number()
-print(random_number)
-
 # should be 5 and 60 
 time1 = 5
 time2 = 10
@@ -52,24 +48,32 @@ def oracle():
     encoded_output = base64.b64encode(first_output.to_bytes(4, 'big'))
     return encoded_output
 
-encoded_value = oracle()
-print(encoded_value)
+def oracleAndBreak(): 
+    encoded_value = oracle()
+    print(encoded_value)
 
-decoded_encoded_value = base64.b64decode(encoded_value)
-decoded_value = int.from_bytes(decoded_encoded_value, 'big')
+    decoded_encoded_value = base64.b64decode(encoded_value)
+    decoded_value = int.from_bytes(decoded_encoded_value, 'big')
 
-current_time = int(time.time())
+    current_time = int(time.time())
 
-time_range = 2 * time2
+    time_range = 2 * time2
 
-found_seed = None
-for possible_seed in range(current_time - time_range, current_time):
-    mt = MersenneTwister(possible_seed)
-    if mt.extract_number() == decoded_value:
-        found_seed = possible_seed
-        break
+    found_seed = None
+    for possible_seed in range(current_time - time_range, current_time):
+        mt = MersenneTwister(possible_seed)
+        if mt.extract_number() == decoded_value:
+            found_seed = possible_seed
+            break
 
-if found_seed is not None:
-    print(f"Found seed: {found_seed}")
-else:
-    print("Seed not found.")
+    if found_seed is not None:
+        print(f'Found seed: {found_seed}')
+    else:
+        print('Seed not found') 
+
+
+mt = MersenneTwister(3) 
+random_number = mt.extract_number()
+print(random_number)
+
+oracleAndBreak()
