@@ -18,6 +18,7 @@ token_dic = {}
 
 #Seed my super-secure PRNG using the OS
 seed = os.urandom(4) #int(os.urandom(4).encode("hex"), 16)
+seed = int.from_bytes(os.urandom(4), 'big')
 MT = MT19937.MT19937(seed)
 
 class index:
