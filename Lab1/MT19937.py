@@ -35,3 +35,16 @@ class MT19937:
 		#TODO: Mix state here
 		return
 
+	def unmix(self, y):
+		y ^= y >> 18
+
+		y ^= (y << 15) & 0xEFC60000
+
+		for _ in range(7):
+			y ^= (y << 7) & 0x9D2C5680
+
+		for _ in range(11):
+			y ^= y >> 11
+
+		return y
+

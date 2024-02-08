@@ -94,9 +94,9 @@ class forgot:
 				#TODO: Email server not working, so I'll just post them to the screen for now.
 				msg = web.ctx.env.get('HTTP_HOST') + "/reset?token=" + token.decode('utf-8')
 
-				tokens.append(token.decode('utf-8'))
-				print('in here')
-				print(len(tokens), tokens)
+				# tokens.append(token.decode('utf-8'))
+				# print('in here')
+				# print(len(tokens), tokens)
 
 				return render.generic(form, msg, err)
 		else:
@@ -209,9 +209,15 @@ def generate_token():
 	
 	#Generate a 256-bit random number as our reset tokwn
 	#by concatentating 8, 32-bit integers with colons
-	token = str(MT.extract_number())
+	t1 = MT.extract_number()
+	tokens.append(t1)
+	token = str(t1)
 	for i in range(7):
-		token += ":" + str(MT.extract_number())
+		t2 = MT.extract_number()
+		tokens.append(t2)
+		token += ":" + str(t2)
+	print(len(tokens))
+	print(tokens)
 	return base64.b64encode(token.encode('utf-8'))
 
 
