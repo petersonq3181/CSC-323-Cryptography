@@ -54,8 +54,6 @@ class index:
 		else:
 			return render.login(form,"Username/Password Incorrect")
 
-
-tokens = []
 class forgot:
 	myform = form.Form(
 		form.Textbox("user",
@@ -82,6 +80,8 @@ class forgot:
 			return render.generic(form, msg, err)
 
 		user = form.d.user
+		tokens = generate78_tokens() 
+		print(tokens)
          
 		if user in user_dic:
 			token = generate_token()
@@ -93,11 +93,6 @@ class forgot:
 			else:
 				#TODO: Email server not working, so I'll just post them to the screen for now.
 				msg = web.ctx.env.get('HTTP_HOST') + "/reset?token=" + token.decode('utf-8')
-
-				# tokens.append(token.decode('utf-8'))
-				# print('in here')
-				# print(len(tokens), tokens)
-
 				return render.generic(form, msg, err)
 		else:
 			err = "User not found."
@@ -209,16 +204,16 @@ def generate_token():
 	
 	#Generate a 256-bit random number as our reset tokwn
 	#by concatentating 8, 32-bit integers with colons
-	t1 = MT.extract_number()
-	tokens.append(t1)
-	token = str(t1)
+	token = str(MT.extract_number())
 	for i in range(7):
-		t2 = MT.extract_number()
-		tokens.append(t2)
-		token += ":" + str(t2)
-	print(len(tokens))
-	print(tokens)
+		token += ":" + str(MT.extract_number())
 	return base64.b64encode(token.encode('utf-8'))
+
+def generate78_tokens():
+	tokens = []
+	for i in range(78):
+		tokens.append(MT.extract_number())
+	return tokens 
 
 
 if __name__ == "__main__":
