@@ -35,32 +35,17 @@ class MT19937:
 		#TODO: Mix state here
 		return
 
-	# def unmix(self, y):
-	# 	y ^= y >> 18
+	def unmix(self, y):
+		y ^= y >> 18
 
-	# 	y ^= (y << 15) & 0xEFC60000
+		y ^= (y << 15) & 0xEFC60000
 
-	# 	for _ in range(7):
-	# 		y ^= (y << 7) & 0x9D2C5680
+		for _ in range(7):
+			y ^= (y << 7) & 0x9D2C5680
 
-	# 	for _ in range(11):
-	# 		y ^= y >> 11
+		for _ in range(11):
+			y ^= y >> 11
 
-	# 	return y
+		return y
 
 
-# # Assuming tokens is your list of 78 ints
-# tokens = [...]  # Replace with your list of 78 integers
-
-# # Create an instance of MT19937
-# # The seed value doesn't matter since we will overwrite the internal state
-# mt = MT19937(0)
-
-# # Apply unmix to each token and set the internal state
-# for i in range(624):
-#     mt.MT[i] = mt.unmix(tokens[i % 78])
-
-# # Reset index to 0
-# mt.index = 0
-
-# # Now mt.MT should be the initial state of the generator

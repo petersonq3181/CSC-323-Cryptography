@@ -81,6 +81,7 @@ class forgot:
 
 		user = form.d.user
 		tokens = generate78_tokens() 
+		mybreak(tokens) 
 		print(tokens)
          
 		if user in user_dic:
@@ -215,6 +216,23 @@ def generate78_tokens():
 		tokens.append(MT.extract_number())
 	return tokens 
 
+def mybreak(tokens): 
+	tokens = [int(token) if not isinstance(token, int) else token for token in tokens]
+
+	# Create an instance of MT19937
+	# The seed value doesn't matter since we will overwrite the internal state
+	newmt = MT19937.MT19937(0)
+
+	# Apply unmix to each token and set the internal state
+	for i in range(624):
+		newmt.MT[i] = newmt.unmix(tokens[i % 78])
+
+	# Reset index to 0
+	newmt.index = 0
+
+	# Now mt.MT should be the initial state of the generator
+	print('got here lol')
+		
 
 if __name__ == "__main__":
 	app = web.application(urls, globals())
