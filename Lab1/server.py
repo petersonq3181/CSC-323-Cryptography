@@ -80,11 +80,20 @@ class forgot:
 			return render.generic(form, msg, err)
 
 		user = form.d.user
-		tokens = generate78_tokens() 
-		mybreak(tokens) 
-		print(tokens)
+
+		# tokens = generate78_tokens() 
+		# mybreak(tokens) 
+		# print(tokens)
          
 		if user in user_dic:
+			tokens = generate78_tokens() 
+			cloned_mt = mybreak(tokens)
+			future_token = generate_token_using_cloned_mt(cloned_mt)
+			print('future token lol')
+			print(future_token)
+			print('cur token_dic:')
+			print(token_dic)
+
 			token = generate_token()
 			time = datetime.datetime.now() + datetime.timedelta(minutes=TIMEOUT)
 			token_dic[token] = reset_token(user, time)
@@ -219,19 +228,20 @@ def generate78_tokens():
 def mybreak(tokens): 
 	tokens = [int(token) if not isinstance(token, int) else token for token in tokens]
 
-	# Create an instance of MT19937
-	# The seed value doesn't matter since we will overwrite the internal state
 	newmt = MT19937.MT19937(0)
 
-	# Apply unmix to each token and set the internal state
 	for i in range(624):
 		newmt.MT[i] = newmt.unmix(tokens[i % 78])
 
-	# Reset index to 0
 	newmt.index = 0
 
-	# Now mt.MT should be the initial state of the generator
-	print('got here lol')
+	return newmt
+
+def generate_token_using_cloned_mt(mt_instance):
+    token = str(mt_instance.extract_number())
+    for i in range(7):
+        token += ":" + str(mt_instance.extract_number())
+    return base64.b64encode(token.encode('utf-8'))
 		
 
 if __name__ == "__main__":
