@@ -54,6 +54,8 @@ class index:
 		else:
 			return render.login(form,"Username/Password Incorrect")
 
+
+tokens = []
 class forgot:
 	myform = form.Form(
 		form.Textbox("user",
@@ -91,6 +93,11 @@ class forgot:
 			else:
 				#TODO: Email server not working, so I'll just post them to the screen for now.
 				msg = web.ctx.env.get('HTTP_HOST') + "/reset?token=" + token.decode('utf-8')
+
+				tokens.append(token.decode('utf-8'))
+				print('in here')
+				print(len(tokens), tokens)
+
 				return render.generic(form, msg, err)
 		else:
 			err = "User not found."
