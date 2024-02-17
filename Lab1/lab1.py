@@ -74,6 +74,6 @@ def oracleAndBreak():
 
 mt = MersenneTwister(3) 
 random_number = mt.extract_number()
-print(random_number)
+
 
 oracleAndBreak()

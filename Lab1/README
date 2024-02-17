@@ -1,0 +1,8 @@
+For Task I: see and run lab1.py 
+
+For Task II: 
+See modifications to server.py
+- modifications in forgot class's POST (to generate 78 tokens and do the PRG cloning) 
+- additional function defs at the bottom to get 78 tokens and clone the PRG 
+And see MT19937.py
+

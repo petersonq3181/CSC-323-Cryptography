@@ -12,7 +12,7 @@ class MT19937:
 	#calling twist() every n numbers
 	def extract_number(self):
 		if self.index == 0:
-			self.generate_numbers()
+			self.twist()
         
 		y = self.MT[self.index]
 		y ^= y >> 11
@@ -23,17 +23,13 @@ class MT19937:
 		self.index = (self.index + 1) % 624
 		return y
 
-	def generate_numbers(self):
+	#Generate the next n values from the series x_i 
+	def twist(self):
 		for i in range(624):
 			y = (self.MT[i] & 0x80000000) + (self.MT[(i + 1) % 624] & 0x7FFFFFFF)
 			self.MT[i] = self.MT[(i + 397) % 624] ^ y >> 1
 			if y % 2 != 0:
 				self.MT[i] ^= 0x9908B0DF
-
-	#Generate the next n values from the series x_i 
-	def twist(self):
-		#TODO: Mix state here
-		return
 
 	def unmix(self, y):
 		y ^= y >> 18
@@ -47,5 +43,3 @@ class MT19937:
 			y ^= y >> 11
 
 		return y
-
-
