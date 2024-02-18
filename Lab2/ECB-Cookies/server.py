@@ -121,7 +121,15 @@ def destroy_cookie():
 	web.setcookie(STR_COOKIE_NAME, "", expires=-1)
 	
 def create_cookie(user, uid, role):
+	print('create_cookie invoked')
+	# user = 'admin'
+	# uid = 0
+	# role = 'admin'
+
 	cookie = crypto.create_crypto_cookie(user, uid, role, master_key)
+	print('create_cookie cookie: ', cookie)
+	print('create_cookie STR_COOKIE_NAME: ', STR_COOKIE_NAME)
+	print('create_cookie cookie.hex(): ', cookie.hex())
 	web.setcookie(STR_COOKIE_NAME, cookie.hex())
 
 def verify_cookie():
@@ -132,6 +140,28 @@ def verify_cookie():
         return crypto.verify_crypto_cookie(bytes.fromhex(cookie), master_key)
     except:
         return "","",""
+	
+
+
+
+
+'''
+user=USERNAME&uid=UID&role=ROLE
+
+USERNAME need to be 4 so user=USERNAME&uid=UID& is 16 bytes,
+so user=USERNAME&uid=UID& fills up the blocks completely, 
+and role=user starts at the beginning of a new block
+username: asdf
+password: 1
+8f84621ec05451a804152c0d1ebda4281d4ac2c764c6175496fe3312946abe3c
+
+admin (See top code)
+username: admin
+user id: 0 
+role: admin 
+NOTE: can simulate this cookie by calling create_cookie(admin, 0, admin)
+c607f41459e28cd4671c527eb0b261f22406a60740703fdc768177927bb6d5c8
+'''
 
 if __name__ == "__main__":
 	app = web.application(urls, globals())
