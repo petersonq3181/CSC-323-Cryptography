@@ -1,5 +1,7 @@
-import crypto, hashlib, os
 from Crypto.Cipher import AES
+import web
+from web import form
+import crypto, hashlib, os
 
 def ansix923_unpad(data):
     padding_len = data[-1]
@@ -41,6 +43,20 @@ print('c2 decrypted: ', decrypt_cookie(bytes.fromhex(c2.hex()), master_key))
 combined_cookie_hex = c1.hex()[:64] + c2.hex()[32:]
 combined_cookie = bytes.fromhex(combined_cookie_hex)
 print('Combined Cookie Decrypted: ', decrypt_cookie(combined_cookie, master_key))
+
+print(type(bytes.fromhex(c1.hex())))
+print(type(c1))
+
+def gg(c, key):
+    try:
+
+        return crypto.verify_crypto_cookie(bytes.fromhex(c.hex()), key)
+    except:
+        print('fuck')
+        return "","",""
+
+a, b, c = gg(c1, master_key)
+print(a, b, c)
 
 '''
 c1

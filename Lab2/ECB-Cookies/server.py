@@ -129,6 +129,12 @@ def verify_cookie():
     if cookie == None:
         return "","",""
     try:
+        print('yoooo callingin verify_crypto_cookie()')
+        print(type(cookie))
+        print(type(bytes.fromhex(cookie)))
+        print()
+
+
         return crypto.verify_crypto_cookie(bytes.fromhex(cookie), master_key)
     except:
         return "","",""
