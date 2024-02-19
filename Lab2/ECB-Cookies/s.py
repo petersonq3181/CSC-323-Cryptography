@@ -2,43 +2,48 @@ import requests
 
 url = 'http://0.0.0.0:8080/'
 
-# Create a session object
 with requests.Session() as session:
-    
-    # Register user
-    reg_data = {
-        'user': 'a', 
-        'password': '12' 
-    }
-    session.get(url + 'register')  # Get the register page to set initial cookies
-    reg_response = session.post(url + 'register', data=reg_data)
-    
-    if reg_response.ok:
-        print("Registration successful")
-        print(reg_response.text)
-    else:
-        print("Registration failed")
 
-    # Login as the registered user
-    login_data = {
-        'user': 'a', 
-        'password': '12' 
-    }
-    session.get(url)  # Get the main page to set initial cookies
-    login_response = session.post(url, data=login_data)
-    
-    if login_response.ok:
-        print("Login successful")
-        print(login_response.text)
-        # Print the cookies received after login
-        print("Cookies after login:", session.cookies.get_dict())
-    else:
-        print("Login failed")
+    def reg_and_login(username, password):
+        c1data = {
+            'user': username, 
+            'password': password 
+        }
+        session.get(url + 'register') 
+        c1response = session.post(url + 'register', data=c1data)
+        
+        if c1response.ok:
+            print("registration successful")
+            print(c1response.text)
+        else:
+            print("registration failed")
 
-    # Access home page
-    home_response = session.get(url + 'home')
-    if home_response.ok:
-        print("Accessing home page")
-        print(home_response.text)
-    else:
-        print("Failed to access home page")
+        session.get(url)
+        c1loginresponse = session.post(url, data=c1data)
+        
+        cookie = ''
+        if c1loginresponse.ok:
+            print("login successful")
+            print(c1loginresponse.text)
+            cookie = session.cookies.get_dict().get('auth_token')
+            print("cookies after login:", cookie)
+        else:
+            print("login failed")
+
+        homeresponse = session.get(url + 'home')
+        if homeresponse.ok:
+            print("accessing home page")
+            print(homeresponse.text)
+        else:
+            print("failed to access home page")
+
+        return cookie
+    
+    c1 = reg_and_login('123456789012345', '1')
+    c2 = reg_and_login('12345678901admin', '1')
+    print(c1)
+    print(c2)
+
+    combined_cookie_hex = c1[:64] + c2[32:]
+    combined_cookie = bytes.fromhex(combined_cookie_hex)
+
