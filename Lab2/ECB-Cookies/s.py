@@ -1,44 +1,42 @@
 import requests
 
+# Create a session object
+session = requests.Session()
+
 url = 'http://0.0.0.0:8080/'
 
-
-# register user 0
-data = {
-    'user': 'a', 
-    'password': '12' 
+# Register a user
+reg_data = {
+    'user': 'a',
+    'password': '12'
 }
+session.get(url + 'register')  # Initial GET might be necessary for CSRF token, etc.
+reg_response = session.post(url + 'register', data=reg_data)
 
-requests.get(url + 'register')
-response = requests.post(url + 'register', data=data)
-
-if response.ok:
-    print("registration successful")
-    print(response.text)
+if reg_response.ok:
+    print("Registration successful")
+    print(reg_response.text)
 else:
-    print("registration failed")
+    print("Registration failed")
 
-# login as user 0 
-data = {
-    'user': 'a', 
-    'password': '12' 
+# Log in as the user
+login_data = {
+    'user': 'a',
+    'password': '12'
 }
+session.get(url)  # Initial GET might be necessary for CSRF token, etc.
+login_response = session.post(url, data=login_data)
 
-requests.get(url)
-response = requests.post(url, data=data)
-
-gg = requests.get(url + 'home')
-if gg.ok:
-    print('gg')
-    print(gg.text)
+if login_response.ok:
+    print("Login successful")
+    print(login_response.text)
 else:
-    print('fuck')
+    print("Login failed")
 
-if response.ok:
-    print("login successful")
-    print(response.text)
+# Access the home page
+home_response = session.get(url + 'home')
+if home_response.ok:
+    print('Access to home page successful')
+    print(home_response.text)
 else:
-    print("login failed")
-
-
-# 3c7d0cbb889f9ba0400f8dafbb5fd18465900ec69c7b92caa8e41e7f347d703e
+    print('Access to home page failed')
