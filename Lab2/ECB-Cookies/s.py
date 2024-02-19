@@ -30,6 +30,8 @@ with requests.Session() as session:
     if login_response.ok:
         print("Login successful")
         print(login_response.text)
+        # Print the cookies received after login
+        print("Cookies after login:", session.cookies.get_dict())
     else:
         print("Login failed")
 
@@ -40,7 +42,3 @@ with requests.Session() as session:
         print(home_response.text)
     else:
         print("Failed to access home page")
-
-    # Get cookie
-    cookie_response = session.get(url + 'get_cookie')
-    print("Cookie:", cookie_response.text)
