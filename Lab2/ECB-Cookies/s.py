@@ -1,4 +1,5 @@
 import requests
+import server
 
 # Create a session object
 session = requests.Session()
@@ -10,7 +11,7 @@ reg_data = {
     'user': 'a',
     'password': '12'
 }
-session.get(url + 'register')  # Initial GET might be necessary for CSRF token, etc.
+session.get(url + 'register')
 reg_response = session.post(url + 'register', data=reg_data)
 
 if reg_response.ok:
@@ -19,12 +20,11 @@ if reg_response.ok:
 else:
     print("Registration failed")
 
-# Log in as the user
 login_data = {
     'user': 'a',
     'password': '12'
 }
-session.get(url)  # Initial GET might be necessary for CSRF token, etc.
+session.get(url)
 login_response = session.post(url, data=login_data)
 
 if login_response.ok:
@@ -40,3 +40,8 @@ if home_response.ok:
     print(home_response.text)
 else:
     print('Access to home page failed')
+
+
+
+cookie = session.get(url + 'get_cookie')
+print(cookie.text)

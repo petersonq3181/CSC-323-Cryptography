@@ -14,7 +14,8 @@ render = web.template.render('templates/')
 urls = ('/', 'index', 
 		'/register', 'register',
 		'/logout', 'logout',
-		'/home', 'home')
+		'/home', 'home',
+		'/get_cookie', 'get_cookie')
 
 class index:
 	login_form = form.Form(
@@ -138,6 +139,14 @@ def verify_cookie():
         return crypto.verify_crypto_cookie(bytes.fromhex(cookie), master_key)
     except:
         return "","",""
+	
+class get_cookie:
+    def GET(self):
+        cookie = web.cookies().get(STR_COOKIE_NAME)
+        if cookie:
+            return cookie
+        else:
+            return "no cookie found"
 
 if __name__ == "__main__":
 	app = web.application(urls, globals())
