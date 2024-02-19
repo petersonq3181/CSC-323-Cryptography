@@ -121,23 +121,8 @@ def destroy_cookie():
 	web.setcookie(STR_COOKIE_NAME, "", expires=-1)
 	
 def create_cookie(user, uid, role):
-	user = 'admin'
-	uid = 0
-	role = 'admin'
 	cookie = crypto.create_crypto_cookie(user, uid, role, master_key)
-
-	# web.setcookie(STR_COOKIE_NAME, cookie.hex())
-
-	# web.setcookie(STR_COOKIE_NAME, '01d368ddcebdb7dcfc57aac2fa4afe34e31f4bd259a1671df14aa91d976af128')
-	web.setcookie(STR_COOKIE_NAME, '01d368ddcebdb7dcfc57aac2fa4afe34a3fabdcbbcac1caf')
-	# 01d368ddcebdb7dcfc57aac2fa4afe34a3fabdcbbcac1caf
-
-'''
-user=admin, uid=0, role=admin
-created this: 
-9634918a7ddbc4c0b4bcf630848504af9f752e2d570880cfa3fabdcbbcac1caf
-
-'''
+	web.setcookie(STR_COOKIE_NAME, cookie.hex())
 
 def verify_cookie():
     cookie = web.cookies().get(STR_COOKIE_NAME)
