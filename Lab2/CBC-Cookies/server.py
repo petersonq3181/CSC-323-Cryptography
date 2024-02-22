@@ -124,11 +124,11 @@ def create_cookie(user, uid, role):
 def verify_cookie():
     cookie = web.cookies().get(STR_COOKIE_NAME)
     if cookie == None:
-    	return "","",""
+        return "","",""
     try:
-    	return crypto.verify_crypto_cookie(bytes.fromhex(cookie), master_key)
+        return crypto.verify_crypto_cookie(bytes.fromhex(cookie), master_key)
     except:
-    	return "","",""
+        return "","",""
 
 if __name__ == "__main__":
 	app = web.application(urls, globals())
