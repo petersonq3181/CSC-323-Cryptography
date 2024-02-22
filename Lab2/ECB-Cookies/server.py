@@ -1,10 +1,12 @@
 import web
 from web import form
 import crypto, hashlib, os
+import requests
 
 STR_COOKIE_NAME = "auth_token"
 
-master_key = os.urandom(16)
+# master_key = os.urandom(16)
+master_key = b'\xc9\xa3\xb6\xa1mE\xca\xfa\x82\xac\x1e\x17hL\x99\xec'
 
 #Database of users. Key is username, value is [SHA1(password), userid, role]
 user_db = {"admin":["119ba0f0a97158cd4c92f9ee6cf2f29e75f5e05a", 0, "admin"]}
@@ -129,12 +131,6 @@ def verify_cookie():
     if cookie == None:
         return "","",""
     try:
-        print('yoooo callingin verify_crypto_cookie()')
-        print(type(cookie))
-        print(type(bytes.fromhex(cookie)))
-        print()
-
-
         return crypto.verify_crypto_cookie(bytes.fromhex(cookie), master_key)
     except:
         return "","",""

@@ -30,7 +30,8 @@ master_key = b'\xc9\xa3\xb6\xa1mE\xca\xfa\x82\xac\x1e\x17hL\x99\xec'
 role = 'user'
 
 c1 = crypto.create_crypto_cookie('123456789012345', 1, role, master_key)
-print('c1: ', c1.hex())
+print('gg', c1, type(c1))
+print('c1: ', type(c1.hex()), c1.hex())
 print('c1 decrypted: ', decrypt_cookie(c1, master_key))
 
 # properly set so 'admin' is at the beginning of block 1 (0 indexing)
@@ -39,6 +40,7 @@ print('c2: ', c2.hex())
 print('c2 decrypted: ', decrypt_cookie(bytes.fromhex(c2.hex()), master_key))
 
 
+print(type(c1), c1)
 
 combined_cookie_hex = c1.hex()[:64] + c2.hex()[32:]
 combined_cookie = bytes.fromhex(combined_cookie_hex)
