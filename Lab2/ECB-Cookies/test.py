@@ -48,18 +48,3 @@ print('Combined Cookie Decrypted: ', decrypt_cookie(combined_cookie, master_key)
 
 print(crypto.verify_crypto_cookie(bytes.fromhex(c2.hex()), master_key))
 print(crypto.verify_crypto_cookie(combined_cookie, master_key))
-
-
-'''
-c1
-b4a6532ef5db31e17b2834aa48f8b2b850dab3dadb27f5a50ad88768e51ae48e
-block 0: b4a6532ef5db31e17b2834aa48f8b2b8
-
-c2
-1b5f72d2324695b3dc0edb8118c091a1410d2a8676427a1d5f862c4c42d9be6e01858a7459b743385d2c0cd40cd8eefc
-0: 1b5f72d2324695b3dc0edb8118c091a1
-1: 410d2a8676427a1d5f862c4c42d9be6e
-2: 01858a7459b743385d2c0cd40cd8eefc
-
-c1[0] + c2[1] = b4a6532ef5db31e17b2834aa48f8b2b8410d2a8676427a1d5f862c4c42d9be6e
-'''

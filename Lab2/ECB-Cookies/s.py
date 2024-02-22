@@ -6,10 +6,6 @@ from crypto import ansix923_pad, ansix923_strip
 
 url = 'http://0.0.0.0:8080/'
 
-# master_key = os.urandom(16)
-master_key = b'\x9f\xce\x1esr\xec\xae@f\x1f\xda\xcdM\xbf\x9e4'
-
-
 with requests.Session() as session:
 
     def reg_and_login(username, password):
@@ -56,11 +52,11 @@ with requests.Session() as session:
 
     print('combined_cookie: ', combined_cookie_hex)
 
-    aes_obj = AES.new(bytes(master_key),AES.MODE_ECB)
-    cookie_pad = aes_obj.decrypt(combined_cookie)
-    cookie = ansix923_strip(cookie_pad, AES.block_size)
-    print()
-    print('decrypted: ', cookie)
+    # aes_obj = AES.new(bytes(master_key),AES.MODE_ECB)
+    # cookie_pad = aes_obj.decrypt(combined_cookie)
+    # cookie = ansix923_strip(cookie_pad, AES.block_size)
+    # print()
+    # print('decrypted: ', cookie)
 
     res = session.post(url + 'verify', data={'cookie_value': combined_cookie_hex})
 
