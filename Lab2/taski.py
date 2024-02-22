@@ -20,7 +20,7 @@ def unpad(padded, block):
     return padded[:-padding]
 
 block_size = 16
-message = b"Hello, World! lolzzz"
+message = b"Hello, Worlddd"
 
 padded = pad(message, block_size)
 print("Padded message:", padded)
