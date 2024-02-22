@@ -1,5 +1,5 @@
 from Crypto.Cipher import AES
-import urllib, os
+import urllib.parse, os
 
 #Read about this padding scheme here: http://en.wikipedia.org/wiki/Padding_(cryptography)#ANSI_X.923
 def ansix923_pad(plain,blocksize):
@@ -34,7 +34,7 @@ def ansix923_strip(plain,blocksize):
 def create_crypto_cookie(user, userid, role, key):
 	
 	#Catch those cheaters trying to set usernames to "user&role=admin"
-	cookie = "user=" + urllib.parse.quote_plus(user) + "&uid=" + str(userid) + "&role=" + role
+	cookie = "user=" + user + "&uid=" + str(userid) + "&role=" + role
 	#OK, I learned my lesson last time. CBC is way better. Randomized IV too.
 	iv = os.urandom(AES.block_size)
 	aes_obj = AES.new(bytes(key), AES.MODE_CBC, iv)
@@ -46,7 +46,8 @@ def verify_crypto_cookie(enc_cookie, key):
     aes_obj = AES.new(bytes(key), AES.MODE_CBC, iv)
     cookie_pad = aes_obj.decrypt(enc_cookie[AES.block_size:])
     cookie = ansix923_strip(cookie_pad, AES.block_size)
-    query = urllib.parse.parse_qs(cookie.decode("latin-1"))
-    
+    query = urllib.parse.parse_qs(cookie)
+    query = {key.decode('utf-8'): [value.decode('utf-8') for value in values] for key, values in query.items()}
+
     #This will cause an exception (to be caught by caller) if one of the keys is missing.
     return query["user"][0], query["uid"][0], query["role"][0]

@@ -1,5 +1,5 @@
 from Crypto.Cipher import AES
-import urllib
+import urllib, os 
 
 #I read about this padding scheme here: http://en.wikipedia.org/wiki/Padding_(cryptography)#ANSI_X.923
 def ansix923_pad(plain,blocksize):

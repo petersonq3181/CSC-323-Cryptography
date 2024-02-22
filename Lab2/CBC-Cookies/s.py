@@ -1,6 +1,4 @@
 import requests
-import crypto 
-from server import master_key
 
 url = 'http://0.0.0.0:8080/'
 
@@ -42,16 +40,8 @@ with requests.Session() as session:
 
         return cookie
     
-    c1 = bytes.fromhex(reg_and_login('123456789012345', '1'))
-    c2 = bytes.fromhex(reg_and_login('12345678901admin', '2'))
+    c1 = bytes.fromhex(reg_and_login('asdf', '1'))
+    print('gg', c1)
 
-    combined_cookie_hex = c1.hex()[:64] + c2.hex()[32:]
-    combined_cookie = bytes.fromhex(combined_cookie_hex)
-
-    res = session.post(url + 'verify', data={'cookie_value': combined_cookie_hex})
-
-    cookie = session.cookies.get_dict().get('auth_token')
-
-    res = session.get(url + 'verify')
-    print(res.text)
+    res = session.post(url + 'verify', data={'cookie_value': c1})
     
