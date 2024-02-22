@@ -49,5 +49,7 @@ def verify_crypto_cookie(enc_cookie, key):
     query = urllib.parse.parse_qs(cookie)
     query = {key.decode('utf-8'): [value.decode('utf-8') for value in values] for key, values in query.items()}
 
+    return query 
+
     #This will cause an exception (to be caught by caller) if one of the keys is missing.
-    return query["user"][0], query["uid"][0], query["role"][0]
+    # return query["user"][0], query["uid"][0], query["role"][0]
