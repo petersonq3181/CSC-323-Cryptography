@@ -6,8 +6,6 @@ import requests
 STR_COOKIE_NAME = "auth_token"
 
 master_key = os.urandom(16)
-# master_key = b'\xc9\xa3\xb6\xa1mE\xca\xfa\x82\xac\x1e\x17hL\x99\xec'
-# master_key = b'fwY\x18\x9c\xf4\x98}\xa8W\x1b\\V\xac\x85\xd9'
 
 #Database of users. Key is username, value is [SHA1(password), userid, role]
 user_db = {"admin":["119ba0f0a97158cd4c92f9ee6cf2f29e75f5e05a", 0, "admin"]}

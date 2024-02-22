@@ -48,15 +48,10 @@ with requests.Session() as session:
     combined_cookie_hex = c1.hex()[:64] + c2.hex()[32:]
     combined_cookie = bytes.fromhex(combined_cookie_hex)
 
-    # print(type(master_key), master_key)
-
-    # print(crypto.verify_crypto_cookie(combined_cookie, master_key))
-    
-    # session.cookies.set('auth_token', combined_cookie_hex)
     res = session.post(url + 'verify', data={'cookie_value': combined_cookie_hex})
 
     cookie = session.cookies.get_dict().get('auth_token')
-    print('gg', type(cookie), cookie)
 
     res = session.get(url + 'verify')
     print(res.text)
+    
