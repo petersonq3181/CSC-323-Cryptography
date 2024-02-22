@@ -1,9 +1,8 @@
 import requests
 import crypto 
-import server 
+from server import master_key
 
 url = 'http://0.0.0.0:8080/'
-master_key = b'\xc9\xa3\xb6\xa1mE\xca\xfa\x82\xac\x1e\x17hL\x99\xec'
 
 with requests.Session() as session:
 
@@ -45,45 +44,19 @@ with requests.Session() as session:
     
     c1 = bytes.fromhex(reg_and_login('123456789012345', '1'))
     c2 = bytes.fromhex(reg_and_login('12345678901admin', '2'))
-    # print('gg')
-    # print(bytes.fromhex(c1), type(bytes.fromhex(c1)))
-    print()
-    print(type(c1), c1)
-    print(type(c2), c2)
 
     combined_cookie_hex = c1.hex()[:64] + c2.hex()[32:]
     combined_cookie = bytes.fromhex(combined_cookie_hex)
-    # print('Combined Cookie Decrypted: ', decrypt_cookie(combined_cookie, master_key))
 
-    # print(crypto.verify_crypto_cookie(bytes.fromhex(c2.hex()), master_key))
-    print(crypto.verify_crypto_cookie(combined_cookie, master_key))
-    # web.setcookie('auth_token', combined_cookie)
+    # print(type(master_key), master_key)
 
-    # # Set the 'auth_token' cookie in the session
-    # cookies = {'auth_token': combined_cookie_hex_str}
-    # response = requests.get(url, cookies=cookies)
+    # print(crypto.verify_crypto_cookie(combined_cookie, master_key))
+    
+    # session.cookies.set('auth_token', combined_cookie_hex)
+    res = session.post(url + 'verify', data={'cookie_value': combined_cookie_hex})
 
-    # session.cookies.set('auth_token', combined_cookie_hex_str)
+    cookie = session.cookies.get_dict().get('auth_token')
+    print('gg', type(cookie), cookie)
 
-    # # Now you can make requests as an admin
-    # response = session.get(url + 'home')
-    # print(response.text)
-
-    # homeresponse = session.get(url)
-    # if homeresponse.ok:
-    #     print("accessing home page")
-    #     print(homeresponse.text)
-    # else:
-    #     print("failed to access home page")
-
-
-    # print(response.text)
-
-    # # You can now make requests with the session that uses the new combined cookie
-    # # For example, to access a protected page:
-    # protected_page_response = session.get(url + 'protected_page')
-    # if protected_page_response.ok:
-    #     print("Accessed protected page")
-    #     print(protected_page_response.text)
-    # else:
-    #     print("Failed to access protected page")
+    res = session.get(url + 'verify')
+    print(res.text)

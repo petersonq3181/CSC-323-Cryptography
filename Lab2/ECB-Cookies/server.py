@@ -5,8 +5,9 @@ import requests
 
 STR_COOKIE_NAME = "auth_token"
 
-# master_key = os.urandom(16)
-master_key = b'\xc9\xa3\xb6\xa1mE\xca\xfa\x82\xac\x1e\x17hL\x99\xec'
+master_key = os.urandom(16)
+# master_key = b'\xc9\xa3\xb6\xa1mE\xca\xfa\x82\xac\x1e\x17hL\x99\xec'
+# master_key = b'fwY\x18\x9c\xf4\x98}\xa8W\x1b\\V\xac\x85\xd9'
 
 #Database of users. Key is username, value is [SHA1(password), userid, role]
 user_db = {"admin":["119ba0f0a97158cd4c92f9ee6cf2f29e75f5e05a", 0, "admin"]}
@@ -16,7 +17,8 @@ render = web.template.render('templates/')
 urls = ('/', 'index', 
 		'/register', 'register',
 		'/logout', 'logout',
-		'/home', 'home')
+		'/home', 'home',
+		'/verify', 'verify')
 
 class index:
 	login_form = form.Form(
@@ -118,6 +120,22 @@ class home:
 			msg = "Welcome, " + user
 
 		return render.home(user, role, msg, "")
+	
+class verify:
+	def GET(self):
+		return verify_cookie()
+
+	def POST(self): 
+		data = web.input(cookie_value=None)
+		if data.cookie_value:
+			destroy_cookie()
+			set_custom_cookie(data.cookie_value)
+			return "Cookie updated"
+		else:
+			return "No cookie value provided"
+	
+def set_custom_cookie(value):
+    web.setcookie(STR_COOKIE_NAME, value)
 
 def destroy_cookie():
 	web.setcookie(STR_COOKIE_NAME, "", expires=-1)
