@@ -43,3 +43,22 @@ Q = (12, 2)
 
 result = point_addition(P, Q, A, B, p)
 print(f"resulting point: {result}")
+
+def scalar_multiplication(k, P, A, B, p):
+    O = (None, None) 
+    result = O
+    addend = P
+
+    while k:
+        if k & 1: 
+            result = point_addition(result, addend, A, B, p)
+        addend = point_addition(addend, addend, A, B, p) 
+        k >>= 1 
+
+    return result
+
+P = (9, 7)
+k = 2
+
+result = scalar_multiplication(k, P, A, B, p)
+print(f"scalar multiplication result: {result}")
