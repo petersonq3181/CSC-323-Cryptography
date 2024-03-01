@@ -1,4 +1,5 @@
 import random
+from taski import scalar_multiplication
 
 # check if n is a quadratic residue modulo p using Euler's criterion
 def is_quadratic_residue(n, p):
@@ -60,3 +61,33 @@ p = 13
 
 point = find_random_point_on_curve(A, B, p)
 print(f"Random point on the curve: {point}")
+
+
+
+def find_point_of_order(A, B, p, curve_order, desired_order):
+    O = (None, None)
+
+    max_attempts = 1000
+    for _ in range(max_attempts):
+        x = random.randint(0, p-1)
+        y_squared = (x**3 + A*x + B) % p
+
+        if not is_quadratic_residue(y_squared, p):
+            continue
+        y = tonelli_shanks(y_squared, p)
+
+        for possible_y in [y, p-y]:
+            P = (x, possible_y)
+            Q = scalar_multiplication(curve_order // desired_order, P, A, B, p)
+            if not (Q == O):
+                if scalar_multiplication(desired_order, Q, A, B, p) == O:
+                    return Q
+    return None
+
+# Example usage - define A, B, p, curve_order, and desired_order based on your specific curve and requirements
+curve_order = 12  # This is just an example value; you'll need to compute or know the curve's order
+desired_order = 3
+
+point = find_point_of_order(A, B, p, curve_order, desired_order)
+print(f"Point with order {desired_order}: {point}")
+

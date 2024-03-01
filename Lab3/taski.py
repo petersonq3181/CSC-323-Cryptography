@@ -62,4 +62,4 @@ P = (9, 7)
 k = 2
 
 result = scalar_multiplication(k, P, A, B, p)
-print(f"scalar multiplication result: {result}")
+print(f"scalar multiplication result: {result}\n")
