@@ -14,6 +14,7 @@ def point_addition(P, Q, A, B, p):
     
     if P != Q:
         m = (y2 - y1) * pow(x2 - x1, -1, p) % p
+        # m = pow((y2 - y1) * pow(x2 - x1, -1, p), 1, p)
     else:
         m = (3 * x1**2 + A) * pow(2 * y1, -1, p) % p
     
