@@ -1,5 +1,8 @@
 import random
+import time
 from taski import scalar_multiplication
+from numpy import roots
+
 
 # check if n is a quadratic residue modulo p using Euler's criterion
 def is_quadratic_residue(n, p):
@@ -67,6 +70,12 @@ print(f"Random point on the curve: {point}")
 def find_point_of_order(A, B, p, curve_order, desired_order):
     O = (None, None)
 
+    if desired_order == 2:
+        for x in range(p):
+            if (x**3 + A*x + B) % p == 0:
+                return (x, 0)  
+        return None 
+
     max_attempts = 1000
     for _ in range(max_attempts):
         x = random.randint(0, p-1)
@@ -84,10 +93,23 @@ def find_point_of_order(A, B, p, curve_order, desired_order):
                     return Q
     return None
 
-# Example usage - define A, B, p, curve_order, and desired_order based on your specific curve and requirements
-curve_order = 12  # This is just an example value; you'll need to compute or know the curve's order
+curve_order = 12 
 desired_order = 3
 
 point = find_point_of_order(A, B, p, curve_order, desired_order)
-print(f"Point with order {desired_order}: {point}")
+print(f"point with order {desired_order}: {point}")
 
+'''
+finding a point with order 2 on an elliptic curve means finding a point that
+when added to itself, results in the identity element
+
+ie. P = -P 
+or same x and opposite y's (so y must equal 0)
+
+solve 0 = x^3 - Ax + B 
+'''
+def find_point_of_order_2(A, B):
+    coefficients = [1, 0, A, B]
+    return roots(coefficients)
+
+print(find_point_of_order_2(-95051, 11279326))
