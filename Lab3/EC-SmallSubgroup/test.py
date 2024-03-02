@@ -6,7 +6,7 @@ import crypto
 
 
 
-bob_public = (59615353590406748135717578710548358608, 122413972788214489652428834752089502199)
+bob_public = (157051742832593814395876345342876634965, 112938922934903000538081756005046745035)
 bob_public_point = crypto.EccAlgPoint(curve=crypto.curve, x=bob_public[0], y=bob_public[1])
 
 
@@ -36,3 +36,5 @@ print(shared_key)
 
 # sign w/ HMAC 
 h = crypto.calculate_hmac(msg, shared_key)
+print('hmac:')
+print(h.hexdigest())
