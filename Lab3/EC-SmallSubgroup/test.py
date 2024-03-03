@@ -35,13 +35,13 @@ msg = 'hello admin!!'
 
 my_private, my_public = crypto.gen_keys()
 # my_public = unique_points[0] # TODO 
-# print(f'my private and public:\n\t {my_private}\n\t {my_public}\n')
+print(f'my private and public:\n\t {my_private}\n\t {my_public}\n')
 
-# shared_key = crypto.get_shared_key(admin_public_point, my_private)
-# print(f'shared key:\n\t {shared_key}\n')
+shared_key = crypto.get_shared_key(admin_public_point, my_private)
+print(f'shared key:\n\t {shared_key}\n')
 
-# hmac = crypto.calculate_hmac(msg, shared_key)
-# print(f'hmac:\n\t {hmac.hexdigest()}')
+hmac = crypto.calculate_hmac(msg, shared_key)
+print(f'hmac:\n\t {hmac.hexdigest()}')
 
 with requests.Session() as session:
 
@@ -50,27 +50,26 @@ with requests.Session() as session:
             'recipient': usr,
             'message': msg,
             'hmac': hmac.hexdigest(),
-            'pkey_x': str(my_public.x),
-            'pkey_y': str(my_public.y)
+            'pkey_x': x,
+            'pkey_y': y
         }
         res = session.post(url + 'submit', data=data)
 
         soup = BeautifulSoup(res.text, 'html.parser')
         hmac_text = soup.find('font', string=lambda t: "HMAC" in t).text if soup.find('font', string=lambda t: "HMAC" in t) else None
         question_text = soup.find('font', string=lambda t: "What do you want?" in t).text if soup.find('font', string=lambda t: "What do you want?" in t) else None
-        print("HMAC text:", hmac_text)
-        print("Question text:", question_text)
-        return hmac_text
+        return hmac_text, question_text
 
-    hmac_texts = []
+    hmac_texts = [submit_msg(hmac, str(my_public.x), str(my_public.y))]
+
     for my_public in unique_points: 
-        print(f'my private and public:\n\t {my_private}\n\t {my_public}\n')
+        # print(f'my private and public:\n\t {my_private}\n\t {my_public}\n')
 
         shared_key = crypto.get_shared_key(admin_public_point, my_private)
-        print(f'shared key:\n\t {shared_key}\n')
+        # print(f'shared key:\n\t {shared_key}\n')
 
         hmac = crypto.calculate_hmac(msg, shared_key)
-        print(f'hmac:\n\t {hmac.hexdigest()}')
+        # print(f'hmac:\n\t {hmac.hexdigest()}')
 
         hmac_texts.append(submit_msg(hmac, str(my_public.x), str(my_public.y)))
 
