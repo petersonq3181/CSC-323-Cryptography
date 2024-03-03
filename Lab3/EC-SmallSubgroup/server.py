@@ -55,13 +55,7 @@ class submit:
 
 
 def user_msg(username, msg, given_hmac, pub_key_x, pub_key_y):
-    print('entered user_msg')
-    print(username)
-    print(msg)
-    print(given_hmac)
-    print(pub_key_x)
-    print(pub_key_y)
-    print()
+    print(f'user_msg():\n\tusername = {type(username)}, {username}\n\t msg = {type(msg)}, {msg}\n\t given_hmac = {type(given_hmac)}, {given_hmac}\n\t pub_key_x = {type(pub_key_x)}, {pub_key_x}\n\t pub_key_y = {type(pub_key_y)}, {pub_key_y}\n')
 
 
     pub_key = crypto.EccAlgPoint(curve=crypto.curve, x=int(pub_key_x), y=int(pub_key_y))

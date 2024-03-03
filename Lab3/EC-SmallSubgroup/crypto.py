@@ -101,10 +101,6 @@ def calculate_hmac(msg: str, key: EccPoint) -> HMAC.HMAC:
 
 
 def verify_msg(msg: str, hmac: str, pub_key: EccPoint, s_key: int) -> bool:
-    print('in verify_msg')
-    print(msg, hmac, pub_key, s_key)
-    print()
-
     shared_key = get_shared_key(pub_key, s_key)
     h = calculate_hmac(msg, shared_key)
     try:
