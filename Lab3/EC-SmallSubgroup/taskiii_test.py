@@ -1,6 +1,7 @@
 import crypto
+import server 
 
-other_public = (26575165156548798546746147025597271043, 233202251361428332102415566383165517691)
+other_public = (152752047649127908360655816425625665590, 158241149968770549892194980362267720475)
 other_public_point = crypto.EccAlgPoint(curve=crypto.curve, x=other_public[0], y=other_public[1])
 
 
@@ -20,8 +21,37 @@ These public keys are then published
 encapsulated in the gen_keys() function 
 '''
 alice_private, alice_public = crypto.gen_keys()
+
+# alice_public = crypto.EccAlgPoint(curve=crypto.curve, x=16349894185180983439102154383611486412, y=224942997200586455214256137069604954919)
+
+# alice_public = crypto.EccPoint.__mul__(alice_public, 4)
+
 print('alice private and public:')
 print(alice_private, alice_public)
+
+
+
+'''
+307635a904ea742cc5221bb35dc013566e2f243913e7fface7377f9307b59fcb
+
+46a4b6cca4e558a936c17bd02dcae93e9a6ceaec83e7e3da6612201c1d4bb2a2
+
+mul0: 
+ba6e39e4c1b824bf865acb8a1a8293428d16048ac680ce5f94fa76a843368652
+
+mul1:
+46a4b6cca4e558a936c17bd02dcae93e9a6ceaec83e7e3da6612201c1d4bb2a2
+
+mul2: 
+ba6e39e4c1b824bf865acb8a1a8293428d16048ac680ce5f94fa76a843368652
+
+mul3: 
+46a4b6cca4e558a936c17bd02dcae93e9a6ceaec83e7e3da6612201c1d4bb2a2
+
+mul4: 
+ba6e39e4c1b824bf865acb8a1a8293428d16048ac680ce5f94fa76a843368652
+
+'''
 
 # calculate shared key 
 shared_key = crypto.get_shared_key(other_public_point, alice_private)
@@ -32,3 +62,8 @@ print(shared_key)
 h = crypto.calculate_hmac(msg, shared_key)
 print('hmac:')
 print(h.hexdigest())
+
+
+reply, hmac = server.user_msg('Admin', 'hello Amin!', h.hexdigest(), alice_public.x, alice_public.y)
+print(reply)
+print(hmac)
