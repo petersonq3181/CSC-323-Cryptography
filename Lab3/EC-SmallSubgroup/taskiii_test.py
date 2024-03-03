@@ -1,15 +1,15 @@
 import crypto
 
-bob_public = (157051742832593814395876345342876634965, 112938922934903000538081756005046745035)
-bob_public_point = crypto.EccAlgPoint(curve=crypto.curve, x=bob_public[0], y=bob_public[1])
+other_public = (26575165156548798546746147025597271043, 233202251361428332102415566383165517691)
+other_public_point = crypto.EccAlgPoint(curve=crypto.curve, x=other_public[0], y=other_public[1])
 
 
 '''
 -----
-Alice (me) trying to send message to Bob 
+Alice (me) trying to send message to Other 
 ----- 
 '''
-msg = 'hello BOB!'
+msg = 'hello Amin!'
 
 '''
 - Each user generates a secret key by picking a random number (mod base_point_order,
@@ -24,7 +24,7 @@ print('alice private and public:')
 print(alice_private, alice_public)
 
 # calculate shared key 
-shared_key = crypto.get_shared_key(bob_public_point, alice_private)
+shared_key = crypto.get_shared_key(other_public_point, alice_private)
 print('shared key:')
 print(shared_key)
 
