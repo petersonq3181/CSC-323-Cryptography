@@ -26,11 +26,11 @@ for i, p in enumerate(unique_points):
     print(i, p)
 
 # ----- talk to admin 
-admin_public = (8406619959067174887612185901056420613, 20101476828203913063003426095829121743)
+admin_public = (86309359621011777890559562973371150033, 174268465768534073612265649129347667704)
 admin_public_point = crypto.EccAlgPoint(curve=crypto.curve, x=admin_public[0], y=admin_public[1])
 
 usr = 'Admin'
-msg = 'hello admin!!' 
+msg = 'hello admin !' 
 
 my_private, my_public = crypto.gen_keys()
 # my_public = unique_points[0] # TODO 

@@ -1,7 +1,7 @@
 import crypto
 import server 
 
-other_public = (152752047649127908360655816425625665590, 158241149968770549892194980362267720475)
+other_public = (78765447383511211333636960546902742062, 47558240522898893543186101077255029345)
 other_public_point = crypto.EccAlgPoint(curve=crypto.curve, x=other_public[0], y=other_public[1])
 
 
@@ -10,7 +10,7 @@ other_public_point = crypto.EccAlgPoint(curve=crypto.curve, x=other_public[0], y
 Alice (me) trying to send message to Other 
 ----- 
 '''
-msg = 'hello Amin!'
+msg = 'hello admin'
 
 '''
 - Each user generates a secret key by picking a random number (mod base_point_order,
@@ -22,7 +22,7 @@ encapsulated in the gen_keys() function
 '''
 alice_private, alice_public = crypto.gen_keys()
 
-# alice_public = crypto.EccAlgPoint(curve=crypto.curve, x=16349894185180983439102154383611486412, y=224942997200586455214256137069604954919)
+alice_public = crypto.EccAlgPoint(curve=crypto.curve, x=16349894185180983439102154383611486412, y=224942997200586455214256137069604954919)
 
 # alice_public = crypto.EccPoint.__mul__(alice_public, 4)
 
