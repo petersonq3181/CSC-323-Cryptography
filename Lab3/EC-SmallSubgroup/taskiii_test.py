@@ -1,11 +1,5 @@
 import crypto
 
-
-# hmac = crypto.calculate_hmac('asdf', (159317589597603284839581010503845834343, 201768302101518577742048492751200300103))
-# print(hmac.hexdigest())
-
-
-
 bob_public = (157051742832593814395876345342876634965, 112938922934903000538081756005046745035)
 bob_public_point = crypto.EccAlgPoint(curve=crypto.curve, x=bob_public[0], y=bob_public[1])
 
