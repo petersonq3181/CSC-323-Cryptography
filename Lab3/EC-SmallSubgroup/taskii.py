@@ -57,16 +57,6 @@ def find_random_point_on_curve(A, B, p):
             y = tonelli_shanks(n, p)
             return (x, y)
 
-
-A = 3
-B = 8
-p = 13
-
-point = find_random_point_on_curve(A, B, p)
-print(f"Random point on the curve: {point}")
-
-
-
 def find_point_of_order(A, B, p, curve_order, desired_order):
     O = (None, None)
 
@@ -93,23 +83,34 @@ def find_point_of_order(A, B, p, curve_order, desired_order):
                     return Q
     return None
 
-curve_order = 12 
-desired_order = 3
 
-point = find_point_of_order(A, B, p, curve_order, desired_order)
-print(f"point with order {desired_order}: {point}")
+if __name__ == "__main__":
+    A = 3
+    B = 8
+    p = 13
 
-'''
-finding a point with order 2 on an elliptic curve means finding a point that
-when added to itself, results in the identity element
+    point = find_random_point_on_curve(A, B, p)
+    print(f"Random point on the curve: {point}")
 
-ie. P = -P 
-or same x and opposite y's (so y must equal 0)
 
-solve 0 = x^3 - Ax + B 
-'''
-def find_point_of_order_2(A, B):
-    coefficients = [1, 0, A, B]
-    return roots(coefficients)
 
-print(find_point_of_order_2(-95051, 11279326))
+    curve_order = 12 
+    desired_order = 3
+
+    point = find_point_of_order(A, B, p, curve_order, desired_order)
+    print(f"point with order {desired_order}: {point}")
+
+    '''
+    finding a point with order 2 on an elliptic curve means finding a point that
+    when added to itself, results in the identity element
+
+    ie. P = -P 
+    or same x and opposite y's (so y must equal 0)
+
+    solve 0 = x^3 - Ax + B 
+    '''
+    def find_point_of_order_2(A, B):
+        coefficients = [1, 0, A, B]
+        return roots(coefficients)
+
+    print(find_point_of_order_2(-95051, 11279326))
