@@ -23,28 +23,6 @@ def point_addition(P, Q, A, B, p):
     
     return (x3, y3)
 
-A = 3
-B = 8   
-p = 13 
-
-P = (9, 7) 
-Q = (1, 8) 
-
-result = point_addition(P, Q, A, B, p)
-print(f"resulting point: {result}")
-
-P = (9, 7) 
-Q = (9, 7)
-
-result = point_addition(P, Q, A, B, p)
-print(f"resulting point: {result}")
-
-P = (12, 11) 
-Q = (12, 2)
-
-result = point_addition(P, Q, A, B, p)
-print(f"resulting point: {result}")
-
 def scalar_multiplication(k, P, A, B, p):
     O = (None, None) 
     result = O
@@ -58,8 +36,33 @@ def scalar_multiplication(k, P, A, B, p):
 
     return result
 
-P = (9, 7)
-k = 2
 
-result = scalar_multiplication(k, P, A, B, p)
-print(f"scalar multiplication result: {result}\n")
+if __name__ == "__main__":
+    A = 3
+    B = 8   
+    p = 13 
+
+    P = (9, 7) 
+    Q = (1, 8) 
+
+    result = point_addition(P, Q, A, B, p)
+    print(f"resulting point: {result}")
+
+    P = (9, 7) 
+    Q = (9, 7)
+
+    result = point_addition(P, Q, A, B, p)
+    print(f"resulting point: {result}")
+
+    P = (12, 11) 
+    Q = (12, 2)
+
+    result = point_addition(P, Q, A, B, p)
+    print(f"resulting point: {result}")
+
+
+    P = (9, 7)
+    k = 2
+
+    result = scalar_multiplication(k, P, A, B, p)
+    print(f"scalar multiplication result: {result}\n")
