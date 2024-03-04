@@ -67,7 +67,6 @@ def user_msg(username, msg, given_hmac, pub_key_x, pub_key_y):
     #         s_key = bob_key
     #     case _:
     #         raise ValueError("Did not find a matching recipient")
-
     if username == 'Admin': 
         s_key = admin_key
     elif username == 'Bob': 
