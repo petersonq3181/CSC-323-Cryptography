@@ -168,4 +168,8 @@ with requests.Session() as session:
     print('end of loop:')
     print(len(CRT_data))
     print(CRT_data)
-      
+
+'''
+a generated CRT_data for 15 points:
+[(3, 7), (3, 11), (7, 23), (14, 31), (19, 37), (14, 61), (17, 67), (13, 89), (43, 607), (1557, 1979), (3449, 4999), (4029, 12157), (7785, 13327), (2225, 13799), (8816, 28411)]
+'''
