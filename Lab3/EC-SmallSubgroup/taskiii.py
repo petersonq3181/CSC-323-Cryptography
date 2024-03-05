@@ -1,6 +1,6 @@
 import crypto
 
-other_public = (20507968327222281360766879431765108772, 23196369610829965056183797332926321381)
+other_public = (37467819072131935153158884188342039802, 51672206866310732937444631673906400726)
 other_public_point = crypto.EccAlgPoint(curve=crypto.curve, x=other_public[0], y=other_public[1])
 
 X = 16349894185180983439102154383611486412
@@ -47,7 +47,7 @@ for i, p in enumerate(unique_points):
     # print(f'mod: {p[0]}\npoint: {p[1]}\n')
 
     h = crypto.calculate_hmac(msg, p[1])
-    hmacs.append((p[0], h))
+    hmacs.append((p[0], h, p[1]))
 
-for mod, h in hmacs:
-    print(f'mod: {mod}, h: {h.hexdigest()}')
+for mod, h, p in hmacs:
+    print(f'mod: {mod}, h: {h.hexdigest()}\n\tp: {p}')

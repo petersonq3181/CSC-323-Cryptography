@@ -148,37 +148,40 @@ with requests.Session() as session:
         print('Failed to get Admin Public')
         sys.exit(0)
 
-    # TODO refactor to for all points 
-    point = points[1][1]
-    if isinstance(point, crypto.EccInfPoint):
-        print('cur point is Origin')
-        sys.exit(0) # maybe refactor to Continue 
-    factor = points[1][0]
+    for factor, point in points: 
+        if isinstance(point, crypto.EccInfPoint):
+            print('cur point is Origin')
+            sys.exit(0) # maybe refactor to Continue 
 
-
-    given_hmac, x, y, hmacs = run(point.x, point.y, factor, admin_public)
-    # print(given_hmac)
-    # print(x)
-    # print(y)
-    # for m, h in hmacs:
-    #     print(m, h.hexdigest(), type(h.hexdigest()))
-    
-    admin_hmac, ret_msg = submit_msg(given_hmac, str(x), str(y))
-    
-    # search for which mod/hmac pair equals admin hmac 
-    found_mod = -1
-    for m, h in hmacs:
-        if h.hexdigest() == admin_hmac:
-            found_mod = m
-            break 
-    if found_mod == -1:
-        print('no match found between admin_hmac and our hmacs')
+        given_hmac, x, y, hmacs = run(point.x, point.y, factor, admin_public)
+        # print(given_hmac)
+        # print(x)
+        # print(y)
+        # for m, h in hmacs:
+        #     print(m, h.hexdigest(), type(h.hexdigest()))
+        
+        admin_hmac, ret_msg = submit_msg(given_hmac, str(x), str(y))
+        
+        # search for which mod/hmac pair equals admin hmac 
+        found_mod = -1
         for m, h in hmacs:
-            print(m, h.hexdigest(), type(h.hexdigest()))
-        print(admin_hmac)
-        sys.exit(0)
+            if h.hexdigest() == admin_hmac:
+                found_mod = m
+                break 
+        if found_mod == -1:
+            print('no match found between admin_hmac and our hmacs')
+            for m, h in hmacs:
+                print(m, h.hexdigest(), type(h.hexdigest()))
+            print(admin_hmac)
+            sys.exit(0)
 
-    print('LFG')
-    print(found_mod, point)
+        print('LFG')
+        print(found_mod, point)
+        print()
 
-    # hmac_texts = [submit_msg(hmac, str(my_public.x), str(my_public.y))]
+        # --- s MOD m = f
+        # s: admin secret key
+        # m: found_mod 
+        # f: factor of point used as our public_key in msg 
+
+        # hmac_texts = [submit_msg(hmac, str(my_public.x), str(my_public.y))]
