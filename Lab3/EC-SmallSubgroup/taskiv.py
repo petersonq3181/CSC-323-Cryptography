@@ -121,6 +121,7 @@ def parse_admin_public(html_content):
 url = 'http://0.0.0.0:8080/'
 usr = 'Admin'
 msg = 'hello admin'
+res_msg = 'Huh, it looks like your hmac does not match your public key. Would you like to double check that?'
 
 
 with requests.Session() as session:
@@ -137,8 +138,8 @@ with requests.Session() as session:
 
         soup = BeautifulSoup(res.text, 'html.parser')
         hmac_text = soup.find('font', string=lambda t: "HMAC" in t).text if soup.find('font', string=lambda t: "HMAC" in t) else None
-        question_text = soup.find('font', string=lambda t: "What do you want?" in t).text if soup.find('font', string=lambda t: "What do you want?" in t) else None
-        return hmac_text, question_text
+        question_text = soup.find('font', string=lambda t: res_msg in t).text if soup.find('font', string=lambda t: res_msg in t) else None
+        return hmac_text.split()[1], question_text
 
     # make users get call to get admin public key 
     users_res = session.get(url + 'users')
@@ -158,8 +159,8 @@ with requests.Session() as session:
     print(given_hmac)
     print(x)
     print(y)
-    for h in hmacs:
-        print(h)
+    for m, h in hmacs:
+        print(m, h.hexdigest())
     
     gg = submit_msg(given_hmac, str(x), str(y))
     print(gg)
