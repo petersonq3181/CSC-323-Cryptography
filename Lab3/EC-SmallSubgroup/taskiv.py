@@ -139,30 +139,46 @@ with requests.Session() as session:
         soup = BeautifulSoup(res.text, 'html.parser')
         hmac_text = soup.find('font', string=lambda t: "HMAC" in t).text if soup.find('font', string=lambda t: "HMAC" in t) else None
         question_text = soup.find('font', string=lambda t: res_msg in t).text if soup.find('font', string=lambda t: res_msg in t) else None
-        return hmac_text.split()[1], question_text
+        return hmac_text.split()[1], question_text.strip()
 
-    # make users get call to get admin public key 
+    # get admin public key 
     users_res = session.get(url + 'users')
     admin_public = parse_admin_public(users_res.text)
     if admin_public == None:
         print('Failed to get Admin Public')
+        sys.exit(0)
 
     # TODO refactor to for all points 
     point = points[1][1]
     if isinstance(point, crypto.EccInfPoint):
         print('cur point is Origin')
         sys.exit(0) # maybe refactor to Continue 
-
     factor = points[1][0]
 
+
     given_hmac, x, y, hmacs = run(point.x, point.y, factor, admin_public)
-    print(given_hmac)
-    print(x)
-    print(y)
-    for m, h in hmacs:
-        print(m, h.hexdigest())
+    # print(given_hmac)
+    # print(x)
+    # print(y)
+    # for m, h in hmacs:
+    #     print(m, h.hexdigest(), type(h.hexdigest()))
     
-    gg = submit_msg(given_hmac, str(x), str(y))
-    print(gg)
+    admin_hmac, ret_msg = submit_msg(given_hmac, str(x), str(y))
+    
+    # search for which mod/hmac pair equals admin hmac 
+    found_mod = -1
+    for m, h in hmacs:
+        if h.hexdigest() == admin_hmac:
+            found_mod = m
+            break 
+    if found_mod == -1:
+        print('no match found between admin_hmac and our hmacs')
+        for m, h in hmacs:
+            print(m, h.hexdigest(), type(h.hexdigest()))
+        print(admin_hmac)
+        sys.exit(0)
+
+    print('LFG')
+    print(found_mod, point)
 
     # hmac_texts = [submit_msg(hmac, str(my_public.x), str(my_public.y))]
