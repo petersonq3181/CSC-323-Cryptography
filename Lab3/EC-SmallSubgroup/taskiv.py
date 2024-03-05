@@ -1,6 +1,7 @@
 from sympy.ntheory import factorint
 from taskii import *
 import crypto
+from taskiiifunc import *
 
 def factors_2_points(factors):
     total_product = 1
@@ -66,6 +67,8 @@ print('factors product', factors_product)
 print(factors_product > 29246302889428143187362802287225875743)
 
 # turn each curve's factor dicts into {factor: point} dicts 
+# TODO: at this point it might not be necessary to still keep track of 
+# which points corr. to which curves, could just accumulate all the points 
 f_points = []
 for f in factors:
     f_points_dict = factors_2_points(f)
@@ -74,13 +77,25 @@ for f in factors:
 # reconstruct to only save prime factors (stored per curve) that are unique 
 # across all the curves 
 curve_pfs = [[] for _ in range(len(factors))]
+points = []
 for i, fs in enumerate(f_points):
     for factor, point in fs.items():
         if factor in uniq_pf:
             uniq_pf.remove(factor)
             curve_pfs[i].append((factor, point))
+            points.append((factor, point))
 
 
-# (hand-selected based on viewing print statements)
-relevant_curves = [1, 2, 4]
+# TODO for now just first point 
+print(points[1])
+point = points[1][1]
+factor = points[1][0]
+print(type(point), point)
+try:
+    print(point.x, point.y)
+except: 
+    print('origin')
+    pass 
 
+run(point.x, point.y, factor) 
+# match mod 0
