@@ -5,8 +5,8 @@ import crypto
 # modifying the server's page in a browser 
 # - set other_public as the admin's public key 
 
-def run(X, Y, factor):
-    other_public = (178701865528500695111421931078682459602, 97278987132914619892488911365753380408)
+def run(X, Y, factor, other_public):
+    # other_public = (178701865528500695111421931078682459602, 97278987132914619892488911365753380408)
     other_public_point = crypto.EccAlgPoint(curve=crypto.curve, x=other_public[0], y=other_public[1])
 
     '''
@@ -49,5 +49,10 @@ def run(X, Y, factor):
         h = crypto.calculate_hmac(msg, p[1])
         hmacs.append((p[0], h))
 
-    for mod, h in hmacs:
-        print(f'mod: {mod}, h: {h.hexdigest()}')
+    # for mod, h in hmacs:
+    #     print(f'mod: {mod}, h: {h.hexdigest()}')
+
+    given_hmac = h
+    x = alice_public.x
+    y = alice_public.y
+    return given_hmac, x, y, hmacs

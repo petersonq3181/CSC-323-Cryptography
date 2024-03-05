@@ -2,6 +2,9 @@ from sympy.ntheory import factorint
 from taskii import *
 import crypto
 from taskiiifunc import *
+import requests
+from bs4 import BeautifulSoup
+import sys 
 
 def factors_2_points(factors):
     total_product = 1
@@ -86,16 +89,79 @@ for i, fs in enumerate(f_points):
             points.append((factor, point))
 
 
-# TODO for now just first point 
-print(points[1])
-point = points[1][1]
-factor = points[1][0]
-print(type(point), point)
-try:
-    print(point.x, point.y)
-except: 
-    print('origin')
-    pass 
+# # TODO for now just first point 
+# print(points[1])
+# point = points[1][1]
+# factor = points[1][0]
+# print(type(point), point)
+# try:
+#     print(point.x, point.y)
+# except: 
+#     print('origin')
+#     pass 
 
-run(point.x, point.y, factor) 
-# match mod 0
+# run(point.x, point.y, factor) 
+# # match mod 0
+
+def parse_admin_public(html_content):
+    soup = BeautifulSoup(html_content, 'html.parser')
+
+    table = soup.find('table')
+    rows = table.find_all('tr')
+
+    for row in rows:
+        cols = row.find_all('td')
+        if cols and cols[0].text.strip() == 'Admin':
+            admin_public_key_str = cols[1].text.strip()
+            admin_public_key = tuple(map(int, admin_public_key_str.strip('()').split(', ')))
+            return admin_public_key
+    return None
+
+
+url = 'http://0.0.0.0:8080/'
+usr = 'Admin'
+msg = 'hello admin'
+
+
+with requests.Session() as session:
+
+    def submit_msg(hmac, x, y):
+        data = {
+            'recipient': usr,
+            'message': msg,
+            'hmac': hmac.hexdigest(),
+            'pkey_x': x,
+            'pkey_y': y
+        }
+        res = session.post(url + 'submit', data=data)
+
+        soup = BeautifulSoup(res.text, 'html.parser')
+        hmac_text = soup.find('font', string=lambda t: "HMAC" in t).text if soup.find('font', string=lambda t: "HMAC" in t) else None
+        question_text = soup.find('font', string=lambda t: "What do you want?" in t).text if soup.find('font', string=lambda t: "What do you want?" in t) else None
+        return hmac_text, question_text
+
+    # make users get call to get admin public key 
+    users_res = session.get(url + 'users')
+    admin_public = parse_admin_public(users_res.text)
+    if admin_public == None:
+        print('Failed to get Admin Public')
+
+    # TODO refactor to for all points 
+    point = points[1][1]
+    if isinstance(point, crypto.EccInfPoint):
+        print('cur point is Origin')
+        sys.exit(0) # maybe refactor to Continue 
+
+    factor = points[1][0]
+
+    given_hmac, x, y, hmacs = run(point.x, point.y, factor, admin_public)
+    print(given_hmac)
+    print(x)
+    print(y)
+    for h in hmacs:
+        print(h)
+    
+    gg = submit_msg(given_hmac, str(x), str(y))
+    print(gg)
+
+    # hmac_texts = [submit_msg(hmac, str(my_public.x), str(my_public.y))]
