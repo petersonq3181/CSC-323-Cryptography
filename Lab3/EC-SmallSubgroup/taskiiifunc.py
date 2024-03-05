@@ -20,15 +20,15 @@ def run(X, Y, factor, other_public):
 
     alice_public = crypto.EccAlgPoint(curve=crypto.curve, x=X, y=Y)
 
-    print(f'my private and public:\n\t {alice_private}\n\t {alice_public}\n')
+    # print(f'my private and public:\n\t {alice_private}\n\t {alice_public}\n')
 
     # calculate shared key 
     shared_key = crypto.get_shared_key(other_public_point, alice_private)
-    print(f'shared key:\n\t {shared_key}\n')
+    # print(f'shared key:\n\t {shared_key}\n')
 
     # sign w/ HMAC 
     h = crypto.calculate_hmac(msg, shared_key)
-    print(f'hmac:\n\t {h.hexdigest()}\n\n\n')
+    # print(f'hmac:\n\t {h.hexdigest()}\n\n\n')
 
     point = crypto.EccAlgPoint(curve=crypto.curve, x=X, y=Y)
 

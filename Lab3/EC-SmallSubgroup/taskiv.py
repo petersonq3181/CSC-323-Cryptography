@@ -148,10 +148,24 @@ with requests.Session() as session:
         print('Failed to get Admin Public')
         sys.exit(0)
 
-    for factor, point in points: 
+    curprod = 1
+
+    # --- s MOD m = f
+    # s: admin secret key
+    # m: found_mod 
+    # f: factor of point used as our public_key in msg 
+    # CRT_data contains tuples of (m, f)
+    CRT_data = []
+    for i, (factor, point) in enumerate(points): 
+        if i < 8:
+            continue 
+
         if isinstance(point, crypto.EccInfPoint):
             print('cur point is Origin')
-            sys.exit(0) # maybe refactor to Continue 
+            # sys.exit(0) # maybe refactor to Continue 
+            continue
+        
+        curprod *= factor
 
         given_hmac, x, y, hmacs = run(point.x, point.y, factor, admin_public)
         # print(given_hmac)
@@ -175,13 +189,10 @@ with requests.Session() as session:
             print(admin_hmac)
             sys.exit(0)
 
-        print('LFG')
-        print(found_mod, point)
-        print()
+        print(f'i: {i}\t {(found_mod, factor)}\t curprod: {curprod}, curprod>curveorder? {curprod > 29246302889428143187362802287225875743}\n')
 
-        # --- s MOD m = f
-        # s: admin secret key
-        # m: found_mod 
-        # f: factor of point used as our public_key in msg 
+        CRT_data.append((found_mod, factor))
 
-        # hmac_texts = [submit_msg(hmac, str(my_public.x), str(my_public.y))]
+    
+    print(len(CRT_data))
+      
