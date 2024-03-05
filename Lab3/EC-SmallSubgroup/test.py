@@ -75,4 +75,15 @@ rem = [2, 3, 2]
 k = len(num) 
 print( "x is " , findMinX(num, rem, k)) 
 
-# This code is contributed by Nikita Tiwari. 
+
+
+gg = [(3, 7), (3, 11), (7, 23), (14, 31), (19, 37), (14, 61), (17, 67), (13, 89), (43, 607), (1557, 1979), (3449, 4999), (4029, 12157), (7785, 13327), (2225, 13799), (8816, 28411)]
+num = []
+rem = []
+for ele in gg:
+	num.append(ele[1])
+	rem.append(ele[0])
+print(num)
+print(rem)
+k = len(num) 
+print( "x is " , findMinX(num, rem, k))
