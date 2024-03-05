@@ -6,6 +6,8 @@ import requests
 from bs4 import BeautifulSoup
 import sys 
 
+server_order = 29246302889428143187362802287225875743
+
 # potential curves (M = B (ie. B != server curve's B))
 # (A, B, Field, Order)
 potential_curves = [
@@ -34,7 +36,7 @@ factors_product = 1
 for ele in uniq_pf:
     factors_product *= ele 
 print('factors product', factors_product)
-print(factors_product > 29246302889428143187362802287225875743)
+print(factors_product > server_order)
 
 
 # curve_pfs = [[] for _ in range(len(factors))]
@@ -132,7 +134,7 @@ with requests.Session() as session:
         
         curprod *= factor
 
-        print(f'entered loop i: {i}, factor: {factor}\n')
+        print(f'entered loop i: {i}, factor: {factor}')
 
         given_hmac, x, y, hmacs = run(point[0], point[1], factor, admin_public)
         # print(given_hmac)
@@ -156,10 +158,14 @@ with requests.Session() as session:
             print(admin_hmac)
             sys.exit(0)
 
-        print(f'i: {i}\t {(found_mod, factor)}\t curprod: {curprod}, curprod>curveorder? {curprod > 29246302889428143187362802287225875743}\n')
+        print(f'i: {i}\t {(found_mod, factor)}\t curprod: {curprod}, curprod>curveorder? {curprod > server_order}\n')
 
         CRT_data.append((found_mod, factor))
 
-    
+        if curprod > server_order:
+            break
+
+    print('end of loop:')
     print(len(CRT_data))
+    print(CRT_data)
       
