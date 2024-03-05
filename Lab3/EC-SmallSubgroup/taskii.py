@@ -49,6 +49,14 @@ def tonelli_shanks(n, p):
         t = (t * c) % p
         R = (R * b) % p
 
+def efficient_find_y(x, A, B, p):
+    y_squared = (x**3 + A*x + B) % p
+    if is_quadratic_residue(y_squared, p):
+        y = tonelli_shanks(y_squared, p)
+        return y, p - y 
+    return None, None 
+
+
 def find_random_point_on_curve(A, B, p):
     while True:
         x = random.randint(0, p-1)
@@ -63,25 +71,20 @@ def find_point_of_order(A, B, p, curve_order, desired_order):
     if desired_order == 2:
         for x in range(p):
             if (x**3 + A*x + B) % p == 0:
-                return (x, 0)  
+                return (x, 0)
         return None 
 
-    max_attempts = 1000
-    for _ in range(max_attempts):
-        x = random.randint(0, p-1)
-        y_squared = (x**3 + A*x + B) % p
+    for x in range(p):
+        y, y_neg = efficient_find_y(x, A, B, p)
+        if y is not None:  # Valid y found, try both y and -y
+            for possible_y in [y, y_neg]:
+                P = (x, possible_y)
+                Q = scalar_multiplication(curve_order // desired_order, P, A, B, p)
+                if Q != O:  # Ensure Q is not the identity element
+                    if scalar_multiplication(desired_order, Q, A, B, p) == O:
+                        return Q  # Found a point of the desired order
 
-        if not is_quadratic_residue(y_squared, p):
-            continue
-        y = tonelli_shanks(y_squared, p)
-
-        for possible_y in [y, p-y]:
-            P = (x, possible_y)
-            Q = scalar_multiplication(curve_order // desired_order, P, A, B, p)
-            if not (Q == O):
-                if scalar_multiplication(desired_order, Q, A, B, p) == O:
-                    return Q
-    return None
+    return None  
 
 
 if __name__ == "__main__":

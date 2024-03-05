@@ -69,130 +69,153 @@ for ele in uniq_pf:
 print('factors product', factors_product)
 print(factors_product > 29246302889428143187362802287225875743)
 
-# turn each curve's factor dicts into {factor: point} dicts 
-# TODO: at this point it might not be necessary to still keep track of 
-# which points corr. to which curves, could just accumulate all the points 
-f_points = []
-for f in factors:
-    f_points_dict = factors_2_points(f)
-    f_points.append(f_points_dict)
-
-# reconstruct to only save prime factors (stored per curve) that are unique 
-# across all the curves 
-curve_pfs = [[] for _ in range(len(factors))]
-points = []
-for i, fs in enumerate(f_points):
-    for factor, point in fs.items():
-        if factor in uniq_pf:
-            uniq_pf.remove(factor)
-            curve_pfs[i].append((factor, point))
-            points.append((factor, point))
+# # turn each curve's factor dicts into {factor: point} dicts 
+# # TODO: at this point it might not be necessary to still keep track of 
+# # which points corr. to which curves, could just accumulate all the points 
+# f_points = []
+# for f in factors:
+#     f_points_dict = factors_2_points(f)
+#     f_points.append(f_points_dict)
 
 
-# # TODO for now just first point 
-# print(points[1])
-# point = points[1][1]
-# factor = points[1][0]
-# print(type(point), point)
-# try:
-#     print(point.x, point.y)
-# except: 
-#     print('origin')
-#     pass 
+cur_prod = 1
+for curve_number in [1, 3, 4]:
+    curve = potential_curves[curve_number]
+    my_keys = [k for k in list(factors[curve_number].keys())[::-1]]
 
-# run(point.x, point.y, factor) 
-# # match mod 0
+    for i, k in enumerate(my_keys):
+        print(f'i: {i}, k: {k}')
+        print(f'{find_point_of_order(curve[0], curve[1], curve[2], curve[3], k)}\n')
 
-def parse_admin_public(html_content):
-    soup = BeautifulSoup(html_content, 'html.parser')
-
-    table = soup.find('table')
-    rows = table.find_all('tr')
-
-    for row in rows:
-        cols = row.find_all('td')
-        if cols and cols[0].text.strip() == 'Admin':
-            admin_public_key_str = cols[1].text.strip()
-            admin_public_key = tuple(map(int, admin_public_key_str.strip('()').split(', ')))
-            return admin_public_key
-    return None
+        cur_prod *= k 
+        print(cur_prod)
+        if cur_prod > 29246302889428143187362802287225875743:
+            print('LFG')
+            break 
 
 
-url = 'http://0.0.0.0:8080/'
-usr = 'Admin'
-msg = 'hello admin'
-res_msg = 'Huh, it looks like your hmac does not match your public key. Would you like to double check that?'
 
 
-with requests.Session() as session:
 
-    def submit_msg(hmac, x, y):
-        data = {
-            'recipient': usr,
-            'message': msg,
-            'hmac': hmac.hexdigest(),
-            'pkey_x': x,
-            'pkey_y': y
-        }
-        res = session.post(url + 'submit', data=data)
 
-        soup = BeautifulSoup(res.text, 'html.parser')
-        hmac_text = soup.find('font', string=lambda t: "HMAC" in t).text if soup.find('font', string=lambda t: "HMAC" in t) else None
-        question_text = soup.find('font', string=lambda t: res_msg in t).text if soup.find('font', string=lambda t: res_msg in t) else None
-        return hmac_text.split()[1], question_text.strip()
 
-    # get admin public key 
-    users_res = session.get(url + 'users')
-    admin_public = parse_admin_public(users_res.text)
-    if admin_public == None:
-        print('Failed to get Admin Public')
-        sys.exit(0)
 
-    curprod = 1
+# # reconstruct to only save prime factors (stored per curve) that are unique 
+# # across all the curves 
+# curve_pfs = [[] for _ in range(len(factors))]
+# points = []
+# for i, fs in enumerate(f_points):
+#     for factor, point in fs.items():
+#         if factor in uniq_pf:
+#             uniq_pf.remove(factor)
+#             curve_pfs[i].append((factor, point))
+#             points.append((factor, point))
 
-    # --- s MOD m = f
-    # s: admin secret key
-    # m: found_mod 
-    # f: factor of point used as our public_key in msg 
-    # CRT_data contains tuples of (m, f)
-    CRT_data = []
-    for i, (factor, point) in enumerate(points): 
-        if i < 8:
-            continue 
 
-        if isinstance(point, crypto.EccInfPoint):
-            print('cur point is Origin')
-            # sys.exit(0) # maybe refactor to Continue 
-            continue
+# # # TODO for now just first point 
+# # print(points[1])
+# # point = points[1][1]
+# # factor = points[1][0]
+# # print(type(point), point)
+# # try:
+# #     print(point.x, point.y)
+# # except: 
+# #     print('origin')
+# #     pass 
+
+# # run(point.x, point.y, factor) 
+# # # match mod 0
+
+# def parse_admin_public(html_content):
+#     soup = BeautifulSoup(html_content, 'html.parser')
+
+#     table = soup.find('table')
+#     rows = table.find_all('tr')
+
+#     for row in rows:
+#         cols = row.find_all('td')
+#         if cols and cols[0].text.strip() == 'Admin':
+#             admin_public_key_str = cols[1].text.strip()
+#             admin_public_key = tuple(map(int, admin_public_key_str.strip('()').split(', ')))
+#             return admin_public_key
+#     return None
+
+
+# url = 'http://0.0.0.0:8080/'
+# usr = 'Admin'
+# msg = 'hello admin'
+# res_msg = 'Huh, it looks like your hmac does not match your public key. Would you like to double check that?'
+
+
+# with requests.Session() as session:
+
+#     def submit_msg(hmac, x, y):
+#         data = {
+#             'recipient': usr,
+#             'message': msg,
+#             'hmac': hmac.hexdigest(),
+#             'pkey_x': x,
+#             'pkey_y': y
+#         }
+#         res = session.post(url + 'submit', data=data)
+
+#         soup = BeautifulSoup(res.text, 'html.parser')
+#         hmac_text = soup.find('font', string=lambda t: "HMAC" in t).text if soup.find('font', string=lambda t: "HMAC" in t) else None
+#         question_text = soup.find('font', string=lambda t: res_msg in t).text if soup.find('font', string=lambda t: res_msg in t) else None
+#         return hmac_text.split()[1], question_text.strip()
+
+#     # get admin public key 
+#     users_res = session.get(url + 'users')
+#     admin_public = parse_admin_public(users_res.text)
+#     if admin_public == None:
+#         print('Failed to get Admin Public')
+#         sys.exit(0)
+
+#     curprod = 1
+
+#     # --- s MOD m = f
+#     # s: admin secret key
+#     # m: found_mod 
+#     # f: factor of point used as our public_key in msg 
+#     # CRT_data contains tuples of (m, f)
+#     CRT_data = []
+#     for i, (factor, point) in enumerate(points): 
+#         if i < 8:
+#             continue 
+
+#         if isinstance(point, crypto.EccInfPoint):
+#             print('cur point is Origin')
+#             # sys.exit(0) # maybe refactor to Continue 
+#             continue
         
-        curprod *= factor
+#         curprod *= factor
 
-        given_hmac, x, y, hmacs = run(point.x, point.y, factor, admin_public)
-        # print(given_hmac)
-        # print(x)
-        # print(y)
-        # for m, h in hmacs:
-        #     print(m, h.hexdigest(), type(h.hexdigest()))
+#         given_hmac, x, y, hmacs = run(point.x, point.y, factor, admin_public)
+#         # print(given_hmac)
+#         # print(x)
+#         # print(y)
+#         # for m, h in hmacs:
+#         #     print(m, h.hexdigest(), type(h.hexdigest()))
         
-        admin_hmac, ret_msg = submit_msg(given_hmac, str(x), str(y))
+#         admin_hmac, ret_msg = submit_msg(given_hmac, str(x), str(y))
         
-        # search for which mod/hmac pair equals admin hmac 
-        found_mod = -1
-        for m, h in hmacs:
-            if h.hexdigest() == admin_hmac:
-                found_mod = m
-                break 
-        if found_mod == -1:
-            print('no match found between admin_hmac and our hmacs')
-            for m, h in hmacs:
-                print(m, h.hexdigest(), type(h.hexdigest()))
-            print(admin_hmac)
-            sys.exit(0)
+#         # search for which mod/hmac pair equals admin hmac 
+#         found_mod = -1
+#         for m, h in hmacs:
+#             if h.hexdigest() == admin_hmac:
+#                 found_mod = m
+#                 break 
+#         if found_mod == -1:
+#             print('no match found between admin_hmac and our hmacs')
+#             for m, h in hmacs:
+#                 print(m, h.hexdigest(), type(h.hexdigest()))
+#             print(admin_hmac)
+#             sys.exit(0)
 
-        print(f'i: {i}\t {(found_mod, factor)}\t curprod: {curprod}, curprod>curveorder? {curprod > 29246302889428143187362802287225875743}\n')
+#         print(f'i: {i}\t {(found_mod, factor)}\t curprod: {curprod}, curprod>curveorder? {curprod > 29246302889428143187362802287225875743}\n')
 
-        CRT_data.append((found_mod, factor))
+#         CRT_data.append((found_mod, factor))
 
     
-    print(len(CRT_data))
+#     print(len(CRT_data))
       
