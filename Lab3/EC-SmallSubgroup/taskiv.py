@@ -6,39 +6,6 @@ import requests
 from bs4 import BeautifulSoup
 import sys 
 
-def factors_2_points(factors):
-    total_product = 1
-    for key, value in factors.items():
-        total_product *= key**value
-
-    fs_otherprods = {}
-    for key in factors:
-        if factors[key] > 1:
-            new_value = total_product // (key ** factors[key])
-        else:
-            new_value = total_product // key
-        fs_otherprods[key] = new_value
-
-    points = {}
-    for k, v in fs_otherprods.items():
-        X, Y = find_random_point_on_curve(potential_curves[1][0], potential_curves[1][1], potential_curves[1][2])
-        new_point_orig = crypto.EccAlgPoint(curve=crypto.curve, x=X, y=Y)
-        new_point = new_point_orig * v
-        points[k] = new_point
-
-    return points
-
-def test_point_order(point, expected_order):
-    acc = []
-    for i in range(0, expected_order * 11):
-        mp = point * i 
-
-        acc.append((i % expected_order, mp))
-
-    unique_points = set(acc)
-    return len(unique_points) == expected_order
-
-
 # potential curves (M = B (ie. B != server curve's B))
 # (A, B, Field, Order)
 potential_curves = [
@@ -69,153 +36,130 @@ for ele in uniq_pf:
 print('factors product', factors_product)
 print(factors_product > 29246302889428143187362802287225875743)
 
-# # turn each curve's factor dicts into {factor: point} dicts 
-# # TODO: at this point it might not be necessary to still keep track of 
-# # which points corr. to which curves, could just accumulate all the points 
-# f_points = []
-# for f in factors:
-#     f_points_dict = factors_2_points(f)
-#     f_points.append(f_points_dict)
 
+# curve_pfs = [[] for _ in range(len(factors))]
+# for i, d in enumerate(factors):
+#     for k, v in d.items():
+#         if k in uniq_pf:
+#             curve_pfs[i].append(k)
+#             uniq_pf.remove(k)
+# print(curve_pfs)
 
-cur_prod = 1
-for curve_number in [1, 3, 4]:
+# hardcoded based on prev print statements 
+fs_and_points = []
+for curve_number in [1, 2, 4]:
     curve = potential_curves[curve_number]
     my_keys = [k for k in list(factors[curve_number].keys())[::-1]]
 
     for i, k in enumerate(my_keys):
-        print(f'i: {i}, k: {k}')
-        print(f'{find_point_of_order(curve[0], curve[1], curve[2], curve[3], k)}\n')
+        print(i, k)
 
-        cur_prod *= k 
-        print(cur_prod)
-        if cur_prod > 29246302889428143187362802287225875743:
-            print('LFG')
-            break 
+        if k < 7:
+            continue 
+    
+        fs_and_points.append((k, find_point_of_order(curve[0], curve[1], curve[2], curve[3], k)))
 
-
-
-
-
-
-
-
-# # reconstruct to only save prime factors (stored per curve) that are unique 
-# # across all the curves 
-# curve_pfs = [[] for _ in range(len(factors))]
-# points = []
-# for i, fs in enumerate(f_points):
-#     for factor, point in fs.items():
-#         if factor in uniq_pf:
-#             uniq_pf.remove(factor)
-#             curve_pfs[i].append((factor, point))
-#             points.append((factor, point))
+# TODO: at this point it might not be necessary to still keep track of 
+# which points corr. to which curves, could just accumulate all the points 
+uniq_fandp = []
+for factor, point in fs_and_points:
+    if factor in uniq_pf:
+        uniq_fandp.append((factor, point))
+        uniq_pf.remove(factor)
+uniq_fandp = sorted(uniq_fandp)
+print(uniq_fandp)
+print(len(uniq_fandp))
 
 
-# # # TODO for now just first point 
-# # print(points[1])
-# # point = points[1][1]
-# # factor = points[1][0]
-# # print(type(point), point)
-# # try:
-# #     print(point.x, point.y)
-# # except: 
-# #     print('origin')
-# #     pass 
 
-# # run(point.x, point.y, factor) 
-# # # match mod 0
+def parse_admin_public(html_content):
+    soup = BeautifulSoup(html_content, 'html.parser')
 
-# def parse_admin_public(html_content):
-#     soup = BeautifulSoup(html_content, 'html.parser')
+    table = soup.find('table')
+    rows = table.find_all('tr')
 
-#     table = soup.find('table')
-#     rows = table.find_all('tr')
-
-#     for row in rows:
-#         cols = row.find_all('td')
-#         if cols and cols[0].text.strip() == 'Admin':
-#             admin_public_key_str = cols[1].text.strip()
-#             admin_public_key = tuple(map(int, admin_public_key_str.strip('()').split(', ')))
-#             return admin_public_key
-#     return None
+    for row in rows:
+        cols = row.find_all('td')
+        if cols and cols[0].text.strip() == 'Admin':
+            admin_public_key_str = cols[1].text.strip()
+            admin_public_key = tuple(map(int, admin_public_key_str.strip('()').split(', ')))
+            return admin_public_key
+    return None
 
 
-# url = 'http://0.0.0.0:8080/'
-# usr = 'Admin'
-# msg = 'hello admin'
-# res_msg = 'Huh, it looks like your hmac does not match your public key. Would you like to double check that?'
+url = 'http://0.0.0.0:8080/'
+usr = 'Admin'
+msg = 'hello admin'
+res_msg = 'Huh, it looks like your hmac does not match your public key. Would you like to double check that?'
 
+with requests.Session() as session:
 
-# with requests.Session() as session:
+    def submit_msg(hmac, x, y):
+        data = {
+            'recipient': usr,
+            'message': msg,
+            'hmac': hmac.hexdigest(),
+            'pkey_x': x,
+            'pkey_y': y
+        }
+        res = session.post(url + 'submit', data=data)
 
-#     def submit_msg(hmac, x, y):
-#         data = {
-#             'recipient': usr,
-#             'message': msg,
-#             'hmac': hmac.hexdigest(),
-#             'pkey_x': x,
-#             'pkey_y': y
-#         }
-#         res = session.post(url + 'submit', data=data)
+        soup = BeautifulSoup(res.text, 'html.parser')
+        hmac_text = soup.find('font', string=lambda t: "HMAC" in t).text if soup.find('font', string=lambda t: "HMAC" in t) else None
+        question_text = soup.find('font', string=lambda t: res_msg in t).text if soup.find('font', string=lambda t: res_msg in t) else None
+        return hmac_text.split()[1], question_text.strip()
 
-#         soup = BeautifulSoup(res.text, 'html.parser')
-#         hmac_text = soup.find('font', string=lambda t: "HMAC" in t).text if soup.find('font', string=lambda t: "HMAC" in t) else None
-#         question_text = soup.find('font', string=lambda t: res_msg in t).text if soup.find('font', string=lambda t: res_msg in t) else None
-#         return hmac_text.split()[1], question_text.strip()
+    # get admin public key 
+    users_res = session.get(url + 'users')
+    admin_public = parse_admin_public(users_res.text)
+    if admin_public == None:
+        print('Failed to get Admin Public')
+        sys.exit(0)
 
-#     # get admin public key 
-#     users_res = session.get(url + 'users')
-#     admin_public = parse_admin_public(users_res.text)
-#     if admin_public == None:
-#         print('Failed to get Admin Public')
-#         sys.exit(0)
+    curprod = 1
 
-#     curprod = 1
-
-#     # --- s MOD m = f
-#     # s: admin secret key
-#     # m: found_mod 
-#     # f: factor of point used as our public_key in msg 
-#     # CRT_data contains tuples of (m, f)
-#     CRT_data = []
-#     for i, (factor, point) in enumerate(points): 
-#         if i < 8:
-#             continue 
-
-#         if isinstance(point, crypto.EccInfPoint):
-#             print('cur point is Origin')
-#             # sys.exit(0) # maybe refactor to Continue 
-#             continue
+    # --- s MOD m = f
+    # s: admin secret key
+    # m: found_mod 
+    # f: factor of point used as our public_key in msg 
+    # CRT_data contains tuples of (m, f)
+    CRT_data = []
+    for i, (factor, point) in enumerate(uniq_fandp): 
+        # if isinstance(point, crypto.EccInfPoint):
+        #     print('cur point is Origin')
+        #     # sys.exit(0) # maybe refactor to Continue 
+        #     continue
         
-#         curprod *= factor
+        curprod *= factor
 
-#         given_hmac, x, y, hmacs = run(point.x, point.y, factor, admin_public)
-#         # print(given_hmac)
-#         # print(x)
-#         # print(y)
-#         # for m, h in hmacs:
-#         #     print(m, h.hexdigest(), type(h.hexdigest()))
+        print(f'entered loop i: {i}, factor: {factor}\n')
+
+        given_hmac, x, y, hmacs = run(point[0], point[1], factor, admin_public)
+        # print(given_hmac)
+        # print(x)
+        # print(y)
+        # for m, h in hmacs:
+        #     print(m, h.hexdigest(), type(h.hexdigest()))
         
-#         admin_hmac, ret_msg = submit_msg(given_hmac, str(x), str(y))
+        admin_hmac, ret_msg = submit_msg(given_hmac, str(x), str(y))
         
-#         # search for which mod/hmac pair equals admin hmac 
-#         found_mod = -1
-#         for m, h in hmacs:
-#             if h.hexdigest() == admin_hmac:
-#                 found_mod = m
-#                 break 
-#         if found_mod == -1:
-#             print('no match found between admin_hmac and our hmacs')
-#             for m, h in hmacs:
-#                 print(m, h.hexdigest(), type(h.hexdigest()))
-#             print(admin_hmac)
-#             sys.exit(0)
+        # search for which mod/hmac pair equals admin hmac 
+        found_mod = -1
+        for m, h in hmacs:
+            if h.hexdigest() == admin_hmac:
+                found_mod = m
+                break 
+        if found_mod == -1:
+            print('no match found between admin_hmac and our hmacs')
+            for m, h in hmacs:
+                print(m, h.hexdigest(), type(h.hexdigest()))
+            print(admin_hmac)
+            sys.exit(0)
 
-#         print(f'i: {i}\t {(found_mod, factor)}\t curprod: {curprod}, curprod>curveorder? {curprod > 29246302889428143187362802287225875743}\n')
+        print(f'i: {i}\t {(found_mod, factor)}\t curprod: {curprod}, curprod>curveorder? {curprod > 29246302889428143187362802287225875743}\n')
 
-#         CRT_data.append((found_mod, factor))
+        CRT_data.append((found_mod, factor))
 
     
-#     print(len(CRT_data))
+    print(len(CRT_data))
       
