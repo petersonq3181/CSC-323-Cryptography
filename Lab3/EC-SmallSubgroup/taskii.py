@@ -76,13 +76,13 @@ def find_point_of_order(A, B, p, curve_order, desired_order):
 
     for x in range(p):
         y, y_neg = efficient_find_y(x, A, B, p)
-        if y is not None:  # Valid y found, try both y and -y
+        if y is not None:
             for possible_y in [y, y_neg]:
                 P = (x, possible_y)
                 Q = scalar_multiplication(curve_order // desired_order, P, A, B, p)
-                if Q != O:  # Ensure Q is not the identity element
+                if Q != O: 
                     if scalar_multiplication(desired_order, Q, A, B, p) == O:
-                        return Q  # Found a point of the desired order
+                        return Q 
 
     return None  
 

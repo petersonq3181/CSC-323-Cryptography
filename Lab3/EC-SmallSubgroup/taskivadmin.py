@@ -1,15 +1,15 @@
 import crypto
 
 # paste in Bob's
-other_public = (197081780250990887425827005688240856386, 66852806643506563351917301897024861017)
+other_public = (67962902483891606150910003455789427653, 228558958161179103215723740427538994859)
 other_public_point = crypto.EccAlgPoint(curve=crypto.curve, x=other_public[0], y=other_public[1])
 
-# paste in Admin's 
-my_public = (183461775136947200127959946100322523072, 37682483540134556834827127697165390887)
+# paste in Admin's, and Admin's private calculated from Chinese Remainder Theorem (in test.py; after taskiv.py)
+my_public = (174631127780235583597992824516490167288, 88449913412994293846060964510401358900)
 X = my_public[0]
 Y = my_public[1]
 # my_private, my_public = crypto.gen_keys()
-my_private = 4524555557526241377017376195840685006
+my_private = 10358729598232529341521219605103477246
 
 '''
 -----

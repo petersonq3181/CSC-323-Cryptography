@@ -47,7 +47,7 @@ print(factors_product > server_order)
 #             uniq_pf.remove(k)
 # print(curve_pfs)
 
-# hardcoded based on prev print statements 
+# hardcoded for 3 curves based on prev print statements 
 fs_and_points = []
 for curve_number in [1, 2, 4]:
     curve = potential_curves[curve_number]
@@ -61,8 +61,8 @@ for curve_number in [1, 2, 4]:
     
         fs_and_points.append((k, find_point_of_order(curve[0], curve[1], curve[2], curve[3], k)))
 
-# TODO: at this point it might not be necessary to still keep track of 
-# which points corr. to which curves, could just accumulate all the points 
+# at this point it might not be necessary to still keep track of 
+# which points corr. to which curves, could just accumulate all the points and their factors 
 uniq_fandp = []
 for factor, point in fs_and_points:
     if factor in uniq_pf:
@@ -170,6 +170,6 @@ with requests.Session() as session:
     print(CRT_data)
 
 '''
-a generated CRT_data for 15 points:
+an example generated CRT_data for 15 points:
 [(3, 7), (3, 11), (7, 23), (14, 31), (19, 37), (14, 61), (17, 67), (13, 89), (43, 607), (1557, 1979), (3449, 4999), (4029, 12157), (7785, 13327), (2225, 13799), (8816, 28411)]
 '''
