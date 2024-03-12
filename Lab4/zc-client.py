@@ -142,7 +142,7 @@ def main():
         print("=" * (int(len(slogan)/2) - int(len(' ZachCoin™')/2)), 'ZachCoin™', "=" * (int(len(slogan)/2) - int(len('ZachCoin™ ')/2)))
         print(slogan)
         print("=" * len(slogan),'\n')
-        x = input("\t0: Print keys\n\t1: Print blockchain\n\t2: Print UTX pool\n\nEnter your choice -> ")
+        x = input("\t0: Print keys\n\t1: Print blockchain\n\t2: Print UTX pool\n\t3: Enter UTX\n\nEnter your choice -> ")
         try:
             x = int(x)
         except:
@@ -156,6 +156,29 @@ def main():
             print(json.dumps(client.blockchain, indent=1))
         elif x == 2:
             print(json.dumps(client.utx, indent=1))
+
+        elif x == 3:
+
+            # for now, just links a utx to the last block in the block chain
+            # and just make the utx for myself 
+            last_block = client.blockchain[-1]
+
+            injson = { 'id': last_block['id'], 'n': 2 }
+            sig = sk.sign(json.dumps(injson, sort_keys=True).encode('utf8')).hex()
+            myutx = {
+                'type': 1,
+                'input': injson,
+                'sig': sig,
+                'output': [{
+                    'value': 2,
+                    'pub_key': my_pub
+                }]
+            }
+
+            client.send_to_nodes(myutx)
+
+
+    
         # TODO: Add options for creating and mining transactions
         # as well as any other additional features
 
@@ -180,28 +203,26 @@ def main():
         # }
         # client.send_to_nodes(myutx)
 
-        mineutx = client.utx[-1]
-        mineutx['output'].append({'value': ZachCoinClient.COINBASE, 'pub_key': my_pub})        
-        prev = client.blockchain[-1]
-        pow, nonce = mine_transaction(mineutx, json.dumps(prev, sort_keys=True))
+        # mineutx = client.utx[-1]
+        # mineutx['output'].append({'value': ZachCoinClient.COINBASE, 'pub_key': my_pub})        
+        # prev = client.blockchain[-1]
+        # pow, nonce = mine_transaction(mineutx, json.dumps(prev, sort_keys=True))
 
-        block_id = hashlib.sha256(json.dumps(mineutx,
-            sort_keys=True).encode('utf8')).hexdigest()
-        zc_block = {
-            "type": 0,
-            "id": block_id,
-            "nonce": nonce,
-            "pow": pow,
-            "prev": prev['id'],
-            "tx": mineutx
-        }
-        client.node_message(zc_block)
+        # block_id = hashlib.sha256(json.dumps(mineutx,
+        #     sort_keys=True).encode('utf8')).hexdigest()
+        # zc_block = {
+        #     "type": 0,
+        #     "id": block_id,
+        #     "nonce": nonce,
+        #     "pow": pow,
+        #     "prev": prev['id'],
+        #     "tx": mineutx
+        # }
+        # client.send_to_nodes(zc_block)
         
-        
-        print('got here')
+        # print('got here')
     
-
-
+        # print(my_pub)
 
 
 
