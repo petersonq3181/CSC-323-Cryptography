@@ -1,7 +1,9 @@
 
-import sys, time, json, os
+import sys, time, json, os, hashlib
 from ecdsa import VerifyingKey, SigningKey
 from p2pnetwork.node import Node
+from Crypto import Random
+from Crypto.Cipher import AES
 
 SERVER_ADDR = "zachcoin.net"
 SERVER_PORT = 9067
@@ -81,6 +83,20 @@ class ZachCoinClient (Node):
         print("node is requested to stop!")
 
 
+def mine_transaction(utx, prev):
+    nonce = Random.new().read(AES.block_size).hex()
+
+    while( int( hashlib.sha256(json.dumps(utx, sort_keys=True).encode('utf8') +
+    prev.encode('utf-8') + nonce.encode('utf-8')).hexdigest(), 16) > ZachCoinClient.DIFFICULTY):
+        
+        nonce = Random.new().read(AES.block_size).hex()
+
+    pow = hashlib.sha256(json.dumps(utx, sort_keys=True).encode('utf8') +
+    prev.encode('utf-8') + nonce.encode('utf-8')).hexdigest()
+  
+    print('Mining successful')
+    return pow, nonce
+
 def main():
 
     if len(sys.argv) < 3:
@@ -143,28 +159,47 @@ def main():
         # TODO: Add options for creating and mining transactions
         # as well as any other additional features
 
-        sig = sk.sign(json.dumps({
-                'id': '9c03fc018ea43c00cd7d8e9811b08bb11a47e1f6327765912851bffd23bff298',
-                'n': 2
-            }, sort_keys=True).encode('utf8')).hex()
-        myutx = {
-            'type': 1,
-            'input': {
-                'id': '9c03fc018ea43c00cd7d8e9811b08bb11a47e1f6327765912851bffd23bff298',
-                'n': 2
-            },
-            'sig': sig,
-            'output': [
-                {
-                    'value': 2,
-                    'pub_key': my_pub
-                }, 
-            ]
+        # # --- scratch for submitting a utx 
+        # sig = sk.sign(json.dumps({
+        #         'id': '9c03fc018ea43c00cd7d8e9811b08bb11a47e1f6327765912851bffd23bff298',
+        #         'n': 2
+        #     }, sort_keys=True).encode('utf8')).hex()
+        # myutx = {
+        #     'type': 1,
+        #     'input': {
+        #         'id': '9c03fc018ea43c00cd7d8e9811b08bb11a47e1f6327765912851bffd23bff298',
+        #         'n': 2
+        #     },
+        #     'sig': sig,
+        #     'output': [
+        #         {
+        #             'value': 2,
+        #             'pub_key': my_pub
+        #         }, 
+        #     ]
+        # }
+        # client.send_to_nodes(myutx)
+
+        mineutx = client.utx[-1]
+        mineutx['output'].append({'value': ZachCoinClient.COINBASE, 'pub_key': my_pub})        
+        prev = client.blockchain[-1]
+        pow, nonce = mine_transaction(mineutx, json.dumps(prev, sort_keys=True))
+
+        block_id = hashlib.sha256(json.dumps(mineutx,
+            sort_keys=True).encode('utf8')).hexdigest()
+        zc_block = {
+            "type": 0,
+            "id": block_id,
+            "nonce": nonce,
+            "pow": pow,
+            "prev": prev['id'],
+            "tx": mineutx
         }
-
-        client.send_to_nodes(myutx)
-
+        client.send_to_nodes(zc_block)
+        
+        
         print('got here')
+    
 
 
 
