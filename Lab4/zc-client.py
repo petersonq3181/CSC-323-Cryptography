@@ -8,6 +8,8 @@ from Crypto.Cipher import AES
 SERVER_ADDR = "zachcoin.net"
 SERVER_PORT = 9067
 
+
+
 class ZachCoinClient (Node):
     
     #ZachCoin Constants
@@ -75,6 +77,10 @@ class ZachCoinClient (Node):
                     self.utx = data['utxpool']
                     print('in node_message: successfully updated utxpool')
                 #TODO: Validate blocks
+                elif data['type'] == self.BLOCK:
+                    self.validate_block(data)
+                    
+
 
     def node_disconnect_with_outbound_node(self, connected_node):
         print("node wants to disconnect with oher outbound node: " + connected_node.id)
@@ -82,11 +88,124 @@ class ZachCoinClient (Node):
     def node_request_to_stop(self):
         print("node is requested to stop!")
 
+    def validate_block(self, data):
+        try:
+            # a. check if all required fields are present
+            required_block_fields = ["type", "id", "nonce", "pow", "prev", "tx"]
+            for field in required_block_fields:
+                if field not in data:
+                    print('failed check a')
+                    return False
+            
+            # b. check if the type field is 0
+            if data["type"] != self.BLOCK:
+                print('failed check b')
+                return False
+            
+            # c. verify the block ID
+            computed_id = hashlib.sha256(json.dumps(data["tx"], sort_keys=True).encode('utf8')).hexdigest()
+            if data["id"] != computed_id:
+                print('failed check c')
+                return False
+
+            # # d. check if prev stores the block ID of the preceding block
+            # if self.blockchain[-1]["id"] != data["prev"]:
+            #     print('failed check d')
+            #     return False
+            
+            # e. validate the proof-of-work
+            utx = json.dumps(data["tx"], sort_keys=True).encode('utf8')
+            nonce = data["nonce"].encode('utf8')
+            prev = data["prev"].encode('utf8')
+            pow_computed = hashlib.sha256(utx + prev + nonce).hexdigest()
+            if int(pow_computed, 16) > self.DIFFICULTY:
+                print('failed check a')
+                return False
+
+            # f. validate the transaction
+            # i. 
+            tx = data["tx"]
+            required_tx_fields = ["type", "input", "sig", "output"]
+            for field in required_tx_fields:
+                if field not in tx:
+                    print('failed check f i')
+                    return False
+            # ii. 
+            if tx["type"] != self.TRANSACTION:
+                print('failed check f ii')
+                return False
+
+            # iii. 
+            block_exists = any(block['id'] == tx['input']['id'] for block in self.blockchain)
+            if not block_exists:
+                return False
+            
+            block = next((block for block in self.blockchain if block['id'] == tx['input']['id']), None)
+            if block is None:
+                return False
+
+            if tx['input']['n'] >= len(block['tx']['output']):
+                return False
+            
+            # iv. 
+            foundiv = 0
+            tx_inputid = tx["input"]["id"] 
+            for b in self.blockchain: 
+                if b["id"] == tx_inputid:
+                    foundiv += 1 
+                    if foundiv > 1: 
+                        print('failed check f iv')
+                        return False 
+        
+            # v. and vi.
+            outputsum = 0
+            outputcount = 0
+            for out in tx['output']:
+                outputcount += 1
+                if (not isinstance(out['value'], int)) or (out['value'] <= 0):
+                    print('failed check f vi')
+                    return False 
+
+                if out['value'] != 50:
+                    outputsum += out['value']
+            if tx['input']['n'] != outputsum:
+                print('failed check f v')
+                return False 
+
+            # vii.
+            nouts = len(tx["output"])
+            if not (1 <= nouts <= 2):
+                print('failed check f vii')
+                return False 
+            
+            if nouts == 1:
+                if tx["output"][0]["value"] != 50:
+                    print('failed check f vii')
+                    return False 
+            elif tx["output"][1]["value"] != 50:
+                print('failed check f vii')
+                return False 
+
+            # viii. 
+            pub_key = tx["output"][0]["pub_key"]
+            vk = VerifyingKey.from_string(bytes.fromhex(pub_key))
+            sig_valid = vk.verify(bytes.fromhex(tx["sig"]), json.dumps(tx["input"], sort_keys=True).encode('utf8'))
+            if not sig_valid:
+                print('failed check f viii')
+                return False
+
+            return True
+        except:
+            print('failed validate_block try()')
+            return False
+
 
 def mine_transaction(utx, prev):
     static_part = json.dumps(utx, sort_keys=True).encode('utf8') + json.dumps(prev, sort_keys=True).encode('utf8')
     
     nonce = Random.new().read(AES.block_size).hex()
+
+    print(f'Mining ... .....')
 
     while( int( hashlib.sha256(static_part + nonce.encode('utf-8')).hexdigest(), 16) > ZachCoinClient.DIFFICULTY):
         nonce = Random.new().read(AES.block_size).hex()
@@ -142,7 +261,7 @@ def main():
         print("=" * (int(len(slogan)/2) - int(len(' ZachCoin™')/2)), 'ZachCoin™', "=" * (int(len(slogan)/2) - int(len('ZachCoin™ ')/2)))
         print(slogan)
         print("=" * len(slogan),'\n')
-        x = input("\t0: Print keys\n\t1: Print blockchain\n\t2: Print UTX pool\n\t3: Enter UTX\n\nEnter your choice -> ")
+        x = input("\t0: Print keys\n\t1: Print blockchain\n\t2: Print UTX pool\n\t3: Enter UTX\n\t4: Mine\n\nEnter your choice -> ")
         try:
             x = int(x)
         except:
@@ -177,10 +296,34 @@ def main():
 
             client.send_to_nodes(myutx)
 
+        elif x == 4: 
+            # # TODO verify the UTX chosen 
+
+            # mineutx = client.utx[-1]
+            # mineutx['output'].append({'value': ZachCoinClient.COINBASE, 'pub_key': my_pub})        
+            # prev = client.blockchain[-1]
+            # pow, nonce = mine_transaction(mineutx, json.dumps(prev, sort_keys=True))
+
+            # block_id = hashlib.sha256(json.dumps(mineutx,
+            #     sort_keys=True).encode('utf8')).hexdigest()
+            # zc_block = {
+            #     "type": 0,
+            #     "id": block_id,
+            #     "nonce": nonce,
+            #     "pow": pow,
+            #     "prev": prev['id'],
+            #     "tx": mineutx
+            # }
+            # client.send_to_nodes(zc_block)
+            
+            # print('got here!')
+
+            client.send_to_nodes(client.blockchain[-8])
+
 
     
-        # TODO: Add options for creating and mining transactions
-        # as well as any other additional features
+            
+
 
         # # --- scratch for submitting a utx 
         # sig = sk.sign(json.dumps({
@@ -203,25 +346,7 @@ def main():
         # }
         # client.send_to_nodes(myutx)
 
-        # mineutx = client.utx[-1]
-        # mineutx['output'].append({'value': ZachCoinClient.COINBASE, 'pub_key': my_pub})        
-        # prev = client.blockchain[-1]
-        # pow, nonce = mine_transaction(mineutx, json.dumps(prev, sort_keys=True))
-
-        # block_id = hashlib.sha256(json.dumps(mineutx,
-        #     sort_keys=True).encode('utf8')).hexdigest()
-        # zc_block = {
-        #     "type": 0,
-        #     "id": block_id,
-        #     "nonce": nonce,
-        #     "pow": pow,
-        #     "prev": prev['id'],
-        #     "tx": mineutx
-        # }
-        # client.send_to_nodes(zc_block)
         
-        # print('got here')
-    
         # print(my_pub)
 
 
