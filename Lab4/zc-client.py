@@ -84,16 +84,16 @@ class ZachCoinClient (Node):
 
 
 def mine_transaction(utx, prev):
+    static_part = json.dumps(utx, sort_keys=True).encode('utf8') + json.dumps(prev, sort_keys=True).encode('utf8')
+    
     nonce = Random.new().read(AES.block_size).hex()
 
-    while( int( hashlib.sha256(json.dumps(utx, sort_keys=True).encode('utf8') +
-    prev.encode('utf-8') + nonce.encode('utf-8')).hexdigest(), 16) > ZachCoinClient.DIFFICULTY):
-        
+    while( int( hashlib.sha256(static_part + nonce.encode('utf-8')).hexdigest(), 16) > ZachCoinClient.DIFFICULTY):
         nonce = Random.new().read(AES.block_size).hex()
 
     pow = hashlib.sha256(json.dumps(utx, sort_keys=True).encode('utf8') +
     prev.encode('utf-8') + nonce.encode('utf-8')).hexdigest()
-  
+
     print('Mining successful')
     return pow, nonce
 
@@ -195,7 +195,7 @@ def main():
             "prev": prev['id'],
             "tx": mineutx
         }
-        client.send_to_nodes(zc_block)
+        client.node_message(zc_block)
         
         
         print('got here')
