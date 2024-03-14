@@ -172,16 +172,16 @@ def validate_block(data):
                     print('failed check f iv')
                     return False 
 
-        # # v. value of the input equals the sum of the outputs 
-        # # (Assuming input and output both from the given block?)
-        # print(f'\t\tin validate_block f. v')
-        # output_sum = sum(out['value'] for out in tx['output'] if out['value'] != 50)
-        # if 'tx' in input_block and 'output' in input_block['tx'] and len(input_block['tx']['output']) >= out_n + 1:
-        #     input_val = input_block['tx']['output'][out_n] 
+        # v. value of the input equals the sum of the outputs 
+        # (Assuming input and output both from the given block?)
+        print(f'\t\tin validate_block f. v')
+        output_sum = sum(out['value'] for out in tx['output'])
+        if 'tx' in input_block and 'output' in input_block['tx'] and len(input_block['tx']['output']) >= out_n + 1:
+            input_val = input_block['tx']['output'][out_n]['value']
 
-        #     if input_val != output_sum:
-        #         print('failed check f v')
-        #         return False 
+            if input_val != output_sum:
+                print('failed check f v')
+                return False 
                 
         # vi.
         print(f'\t\tin validate_block f. vi')
