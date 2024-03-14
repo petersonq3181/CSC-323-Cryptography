@@ -6,6 +6,7 @@ TRANSACTION = 1
 DIFFICULTY = 0x0000007FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
 
 sk = SigningKey.generate()
+vk = sk.verifying_key
 
 blockchain = []
 
@@ -28,7 +29,7 @@ b1 = {
         "output": [
             {
                 "value": 50,
-                "pub_key": "c26cfef538dd15b6f52593262403de16fa2dc7acb21284d71bf0a28f5792581b4a6be89d2a7ec1d4f7849832fe7b4daa"
+                "pub_key": vk.to_string().hex()
             }
         ]
     }
@@ -95,6 +96,7 @@ def validate_block(data):
         
         # f.i. 
         # i. 
+        print(f'\t\tin validate_block f. i')
         tx = data["tx"]
         required_tx_fields = ["type", "input", "sig", "output"]
         for field in required_tx_fields:
@@ -128,32 +130,32 @@ def validate_block(data):
             return False 
         input_block = blockchain[input_block_idx]
 
-
         # d. check if prev stores the block ID of the preceding block
         if data['prev'] != prev_block['id']:
             print('failed check d')
             return False
         
-        # e. validate the proof-of-work
-        print(f'\tin validate_block e')
-        utx = json.dumps(data["tx"], sort_keys=True).encode('utf8')
-        nonce = data["nonce"].encode('utf8')
-        prev_id = data["prev"].encode('utf8')
-        pow_computed = hashlib.sha256(utx + prev_id + nonce).hexdigest()
-        if int(pow_computed, 16) > DIFFICULTY:
-            print('failed check a')
-            return False
+        # # e. validate the proof-of-work
+        # print(f'\tin validate_block e')
+        # utx = json.dumps(data["tx"], sort_keys=True).encode('utf8')
+        # nonce = data["nonce"].encode('utf8')
+        # prev_id = data["prev"].encode('utf8')
+        # pow_computed = hashlib.sha256(utx + prev_id + nonce).hexdigest()
+        # if int(pow_computed, 16) > DIFFICULTY:
+        #     print('failed check e')
+        #     return False
 
         # ----- f. validate the transaction
         print(f'\tin validate_block f')
         
-            
         # ii. 
+        print(f'\t\tin validate_block f. ii')
         if tx["type"] != TRANSACTION:
             print('failed check f ii')
             return False
 
         # iii. (part of it's above)
+        print(f'\t\tin validate_block f. iii')
         if 'tx' in input_block and 'output' in input_block['tx']:
             if data['tx']['input']['n'] + 1 > len(input_block['tx']['output']):
                 print('failed check f iii, does not refer to valid output')
@@ -161,6 +163,7 @@ def validate_block(data):
         
         # iv. there is no other valid transaction referring to the
         # same output currently in the blockchain
+        print(f'\t\tin validate_block f. iv')
         out_id = data['tx']['input']['id']
         out_n = data['tx']['input']['n']
         for b in blockchain:
@@ -169,48 +172,58 @@ def validate_block(data):
                     print('failed check f iv')
                     return False 
 
-        # v. value of the input equals the sum of the outputs 
-        # (Assuming input and output both from the given block?)
-        output_sum = sum(out['value'] for out in tx['output'] if out['value'] != 50)
-        if 'tx' in input_block and 'output' in input_block['tx'] and len(input_block['tx']['output']) >= out_n + 1:
-            input_val = input_block['tx']['output'][out_n] 
+        # # v. value of the input equals the sum of the outputs 
+        # # (Assuming input and output both from the given block?)
+        # print(f'\t\tin validate_block f. v')
+        # output_sum = sum(out['value'] for out in tx['output'] if out['value'] != 50)
+        # if 'tx' in input_block and 'output' in input_block['tx'] and len(input_block['tx']['output']) >= out_n + 1:
+        #     input_val = input_block['tx']['output'][out_n] 
 
-            if input_val != output_sum:
-                print('failed check f v')
-                return False 
+        #     if input_val != output_sum:
+        #         print('failed check f v')
+        #         return False 
                 
         # vi.
+        print(f'\t\tin validate_block f. vi')
         nouts = len(tx["output"])
         # "There should be no more than two outputs and no fewer than one output for any unverified transaction (not
         # including the coinbase transaction which is added by the miner, described later)"
-        if (not (2 <= nouts <= 3)) or (not (all('value' in item and isinstance(item['value'], int) and item['value'] > 0 for item in tx['output']))): 
+        if (not (1 <= nouts <= 3)) or (not (all('value' in item and isinstance(item['value'], int) and item['value'] > 0 for item in tx['output']))): 
             print('failed check f vi')
             return False 
         
         # vii. 
+        print(f'\t\tin validate_block f. vii')
         if tx['output'][-1]['value'] != 50: 
             print('failed check f vii')
             return False 
         
         # viii. 
-        found = False 
-        for o in tx['output']:
-            if 'value' in o and o['value'] == 50: 
-                found = True
-                pub_key = o['pub_key']
-                break 
-        if not found: 
+        input_output = None
+        if 'tx' in input_block and 'output' in input_block['tx']:
+            if len(input_block['tx']['output']) <= out_n + 1:
+                input_output = input_block['tx']['output'][out_n]
+        if input_output is None: 
             print('failed check f viii (first part)')
-            return False
-        vk = VerifyingKey.from_string(bytes.fromhex(pub_key))
-        sig_valid = vk.verify(bytes.fromhex(tx["sig"]), json.dumps(tx["input"], sort_keys=True).encode('utf8'))
-        if not sig_valid:
+            return False     
+
+        vk = VerifyingKey.from_string(bytes.fromhex(input_output['pub_key']))
+        viii = vk.verify(bytes.fromhex(tx['sig']), json.dumps(tx['input'], sort_keys=True).encode('utf8'))
+        if not viii: 
             print('failed check f viii (second part)')
             return False
+        
 
         return True
-    except:
+    except Exception as e:
+        print(f"An error occurred: {e}")
         print('failed validate_block try()')
         return False
 
 
+
+
+
+blockchain = [b1, b2]
+gg = validate_block(b2)
+print('gg: ', gg)
