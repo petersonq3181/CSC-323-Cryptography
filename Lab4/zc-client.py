@@ -163,27 +163,55 @@ class ZachCoinClient (Node):
                 print('failed check e')
                 return False
 
+            return self.validate_tx(data['tx'])
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            print('failed validate_block try()')
+            return False
+        
+    def validate_tx(self, tx):
+        try:
             # ----- f. validate the transaction
-            print(f'\tin validate_block f')
-            
+            print(f'\tin validate_tx f')
+
+            # i. 
+            print(f'\t\tin validate_block f. i')
+            required_tx_fields = ["type", "input", "sig", "output"]
+            for field in required_tx_fields:
+                if field not in tx:
+                    print('failed check f i')
+                    return False
+                
             # ii. 
-            print(f'\t\tin validate_block f. ii')
+            print(f'\t\tin validate_tx f. ii')
             if tx["type"] != self.TRANSACTION:
                 print('failed check f ii')
                 return False
 
+            # iii 
+            input_block_id = tx['input']['id']
+            found = False
+            for input_block_idx, b in enumerate(self.blockchain): 
+                if b['id'] == input_block_id:
+                    found = True
+                    break 
+            if not found:
+                print('failed check f iii, no valid block')
+                return False 
+            input_block = self.blockchain[input_block_idx]
+            
             # iii. (part of it's above)
-            print(f'\t\tin validate_block f. iii')
+            print(f'\t\tin validate_tx f. iii')
             if 'tx' in input_block and 'output' in input_block['tx']:
-                if data['tx']['input']['n'] + 1 > len(input_block['tx']['output']):
+                if tx['input']['n'] + 1 > len(input_block['tx']['output']):
                     print('failed check f iii, does not refer to valid output')
                     return False 
             
             # iv. there is no other valid transaction referring to the
             # same output currently in the blockchain
-            print(f'\t\tin validate_block f. iv')
-            out_id = data['tx']['input']['id']
-            out_n = data['tx']['input']['n']
+            print(f'\t\tin validate_tx f. iv')
+            out_id = tx['input']['id']
+            out_n = tx['input']['n']
             for b in self.blockchain:
                 if 'tx' in b and 'input' in b['tx'] and 'id' in b['tx']['input'] and 'n' in b['tx']['input']:
                     if b['tx']['input']['id'] == out_id and b['tx']['input']['id'] == out_n:
@@ -192,8 +220,8 @@ class ZachCoinClient (Node):
 
             # v. value of the input equals the sum of the outputs 
             # (Assuming input and output both from the given block?)
-            print(f'\t\tin validate_block f. v')
-            output_sum = sum(out['value'] for out in tx['output'] if out['value'] != 50) # TODO (don't know if i need to exclude coinbase)
+            print(f'\t\tin validate_tx f. v')
+            output_sum = sum(out['value'] for out in tx['output'])
             if 'tx' in input_block and 'output' in input_block['tx'] and len(input_block['tx']['output']) >= out_n + 1:
                 input_val = input_block['tx']['output'][out_n]['value']
 
@@ -202,7 +230,7 @@ class ZachCoinClient (Node):
                     return False 
                     
             # vi.
-            print(f'\t\tin validate_block f. vi')
+            print(f'\t\tin validate_tx f. vi')
             nouts = len(tx["output"])
             # "There should be no more than two outputs and no fewer than one output for any unverified transaction (not
             # including the coinbase transaction which is added by the miner, described later)"
@@ -211,7 +239,7 @@ class ZachCoinClient (Node):
                 return False 
             
             # vii. 
-            print(f'\t\tin validate_block f. vii')
+            print(f'\t\tin validate_tx f. vii')
             if tx['output'][-1]['value'] != 50: 
                 print('failed check f vii')
                 return False 
@@ -231,12 +259,12 @@ class ZachCoinClient (Node):
                 print('failed check f viii (second part)')
                 return False
             
-
             return True
         except Exception as e:
             print(f"An error occurred: {e}")
-            print('failed validate_block try()')
+            print('failed validate_tx try()')
             return False
+
 
 
 def mine_transaction(utx, prev):
