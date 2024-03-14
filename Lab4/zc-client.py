@@ -76,7 +76,6 @@ class ZachCoinClient (Node):
                 elif data['type'] == self.UTXPOOL:
                     self.utx = data['utxpool']
                     print('in node_message: successfully updated utxpool')
-                #TODO: Validate blocks
                 elif data['type'] == self.BLOCK:
                     valid_block = self.validate_block(data)
                     print('validated block returned: ', valid_block)
@@ -194,7 +193,7 @@ class ZachCoinClient (Node):
             # v. value of the input equals the sum of the outputs 
             # (Assuming input and output both from the given block?)
             print(f'\t\tin validate_block f. v')
-            output_sum = sum(out['value'] for out in tx['output'])
+            output_sum = sum(out['value'] for out in tx['output'] if out['value'] != 50) # TODO (don't know if i need to exclude coinbase)
             if 'tx' in input_block and 'output' in input_block['tx'] and len(input_block['tx']['output']) >= out_n + 1:
                 input_val = input_block['tx']['output'][out_n]['value']
 
@@ -337,7 +336,7 @@ def main():
             client.send_to_nodes(myutx)
 
         elif x == 4: 
-            # # TODO verify the UTX chosen 
+            # # TODO verify the UTX chosen ? diff verification than entire block verification? 
 
             # mineutx = client.utx[-1]
             # mineutx['output'].append({'value': ZachCoinClient.COINBASE, 'pub_key': my_pub})        
@@ -358,10 +357,7 @@ def main():
             
             # print('got here!')
 
-            print(sk)
-            print(vk.to_string().hex())
-
-            
+        
             client.send_to_nodes(client.blockchain[-1])
 
 
