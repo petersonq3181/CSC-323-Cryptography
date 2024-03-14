@@ -78,7 +78,8 @@ class ZachCoinClient (Node):
                     print('in node_message: successfully updated utxpool')
                 #TODO: Validate blocks
                 elif data['type'] == self.BLOCK:
-                    self.validate_block(data)
+                    valid_block = self.validate_block(data)
+                    print('validated block returned: ', valid_block)
                     
 
 
@@ -91,6 +92,7 @@ class ZachCoinClient (Node):
     def validate_block(self, data):
         try:
             # a. check if all required fields are present
+            print(f'\tin validate_block a')
             required_block_fields = ["type", "id", "nonce", "pow", "prev", "tx"]
             for field in required_block_fields:
                 if field not in data:
@@ -98,22 +100,26 @@ class ZachCoinClient (Node):
                     return False
             
             # b. check if the type field is 0
+            print(f'\tin validate_block b')
             if data["type"] != self.BLOCK:
                 print('failed check b')
                 return False
             
             # c. verify the block ID
+            print(f'\tin validate_block c')
             computed_id = hashlib.sha256(json.dumps(data["tx"], sort_keys=True).encode('utf8')).hexdigest()
             if data["id"] != computed_id:
                 print('failed check c')
                 return False
 
             # # d. check if prev stores the block ID of the preceding block
+            # print(f'\tin validate_block d')
             # if self.blockchain[-1]["id"] != data["prev"]:
             #     print('failed check d')
             #     return False
             
             # e. validate the proof-of-work
+            print(f'\tin validate_block e')
             utx = json.dumps(data["tx"], sort_keys=True).encode('utf8')
             nonce = data["nonce"].encode('utf8')
             prev = data["prev"].encode('utf8')
@@ -123,6 +129,7 @@ class ZachCoinClient (Node):
                 return False
 
             # f. validate the transaction
+            print(f'\tin validate_block f')
             # i. 
             tx = data["tx"]
             required_tx_fields = ["type", "input", "sig", "output"]
@@ -138,39 +145,45 @@ class ZachCoinClient (Node):
             # iii. 
             block_exists = any(block['id'] == tx['input']['id'] for block in self.blockchain)
             if not block_exists:
+                print('failed check f iii')
                 return False
             
             block = next((block for block in self.blockchain if block['id'] == tx['input']['id']), None)
             if block is None:
+                print('failed check f iii')
                 return False
 
             if tx['input']['n'] >= len(block['tx']['output']):
+                print('failed check f iii')
                 return False
             
-            # iv. 
+            # iv. and v. 
             foundiv = 0
             tx_inputid = tx["input"]["id"] 
+            outputsum = sum(out['value'] for out in tx['output'] if out['value'] != 50)
             for b in self.blockchain: 
                 if b["id"] == tx_inputid:
                     foundiv += 1 
+                    # if foundiv == 1:
+
+                        # # v.
+                        # if outputsum != b["tx"]["output"][data["tx"]["input"]["n"]]["value"]: 
+                            
+                        #     print('failed check f v')
+                        #     print(outputsum)
+                        #     print(b["tx"]["output"][data["tx"]["input"]["n"]]["value"])
+                        #     return False 
                     if foundiv > 1: 
                         print('failed check f iv')
                         return False 
         
             # v. and vi.
-            outputsum = 0
             outputcount = 0
             for out in tx['output']:
                 outputcount += 1
                 if (not isinstance(out['value'], int)) or (out['value'] <= 0):
                     print('failed check f vi')
                     return False 
-
-                if out['value'] != 50:
-                    outputsum += out['value']
-            if tx['input']['n'] != outputsum:
-                print('failed check f v')
-                return False 
 
             # vii.
             nouts = len(tx["output"])
@@ -318,7 +331,11 @@ def main():
             
             # print('got here!')
 
-            client.send_to_nodes(client.blockchain[-8])
+            print(sk)
+            print(vk.to_string().hex())
+
+            
+            client.send_to_nodes(client.blockchain[-1])
 
 
     
