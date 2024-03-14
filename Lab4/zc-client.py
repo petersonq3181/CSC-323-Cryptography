@@ -364,29 +364,41 @@ def main():
             client.send_to_nodes(myutx)
 
         elif x == 4: 
-            # # TODO verify the UTX chosen ? diff verification than entire block verification? 
 
-            # mineutx = client.utx[-1]
-            # mineutx['output'].append({'value': ZachCoinClient.COINBASE, 'pub_key': my_pub})        
-            # prev = client.blockchain[-1]
-            # pow, nonce = mine_transaction(mineutx, json.dumps(prev, sort_keys=True))
+            # find a valid utx from the pool 
+            found_utx = False 
+            for i in range(len(client.utx)): 
+                if client.validate_tx(client.utx[i]): 
+                    found_utx = True 
+                    break 
+            if not found_utx: 
+                print('no valid utxs in pool')
+                return 
 
-            # block_id = hashlib.sha256(json.dumps(mineutx,
-            #     sort_keys=True).encode('utf8')).hexdigest()
-            # zc_block = {
-            #     "type": 0,
-            #     "id": block_id,
-            #     "nonce": nonce,
-            #     "pow": pow,
-            #     "prev": prev['id'],
-            #     "tx": mineutx
-            # }
-            # client.send_to_nodes(zc_block)
+            mineutx = client.utx[i]
+            print('mineutx:')
+            print(mineutx)
+
+            mineutx['output'].append({'value': ZachCoinClient.COINBASE, 'pub_key': my_pub})        
+            prev = client.blockchain[-1]
+            pow, nonce = mine_transaction(mineutx, json.dumps(prev, sort_keys=True))
+
+            block_id = hashlib.sha256(json.dumps(mineutx,
+                sort_keys=True).encode('utf8')).hexdigest()
+            zc_block = {
+                "type": 0,
+                "id": block_id,
+                "nonce": nonce,
+                "pow": pow,
+                "prev": prev['id'],
+                "tx": mineutx
+            }
+            client.send_to_nodes(zc_block)
             
-            # print('got here!')
+            print('got here!')
 
         
-            client.send_to_nodes(client.blockchain[-1])
+            # client.send_to_nodes(client.blockchain[-1])
 
 
     
