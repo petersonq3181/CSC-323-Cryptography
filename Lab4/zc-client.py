@@ -68,6 +68,9 @@ class ZachCoinClient (Node):
 
         if data != None:
             if 'type' in data:
+                # print('yoooo', type(data['type']), data['type'])
+                print('yo')
+                print(data)
                 if data['type'] == self.TRANSACTION:
                     self.utx.append(data)
                     print('in node_message: successfully added tx')
@@ -95,6 +98,8 @@ class ZachCoinClient (Node):
 
     def validate_block(self, data):
         try:
+
+            prev_block = self.blockchain[-1]
 
             # a. check if all required fields are present
             print(f'\tin validate_block a')
@@ -126,54 +131,22 @@ class ZachCoinClient (Node):
                 if field not in tx:
                     print('failed check f i')
                     return False
-            
-            # ----- meta useful info 
-            # # 1 finding index of current passed in block, in blockchain 
-            # #   (must find, b/c this is called in function where we can't also pass an index)
-            # found = False
-            # for blockchain_idx, b in enumerate(self.blockchain): 
-            #     if b['id'] == data['id']:
-            #         found = True
-            #         break 
-            # if not found or blockchain_idx < 1:
-            #     print('could not find current block in blockchain')
-            #     return False 
-            # # 2 find prev block 
-            # prev_block = self.blockchain[blockchain_idx - 1]
-            prev_block = self.blockchain[-1]
-
-            # # 3 find current block's tx's input block 
-            # # (and part of f iii)
-            # input_block_id = data['tx']['input']['id']
-            # found = False
-            # for input_block_idx, b in enumerate(self.blockchain): 
-            #     if b['id'] == input_block_id:
-            #         found = True
-            #         break 
-            # if not found:
-            #     print('failed check f iii, no valid block')
-            #     return False 
-            # input_block = self.blockchain[input_block_idx]
 
             # d. check if prev stores the block ID of the preceding block
             if data['prev'] != prev_block['id']:
                 print('failed check d')
                 return False
-            
-                    
-            # # e. validate the proof-of-work
-            # print(f'\tin validate_block e')
-            # utx = json.dumps(data["tx"], sort_keys=True).encode('utf8')
-            # nonce = data["nonce"].encode('utf8')
-            # prev_id = data["prev"].encode('utf8')
-            # pow_computed = hashlib.sha256(utx + prev_id + nonce).hexdigest()
-            # if int(pow_computed, 16) > self.DIFFICULTY:
-            #     print('failed check e')
-            #     return False
-            # if not validate_proof_of_work(data, self.DIFFICULTY):
-            #     print('failed check e')
-            #     return False
-
+        
+            # e. validate the proof-of-work
+            print(f'\tin validate_block e')
+            utx = json.dumps(data["tx"], sort_keys=True).encode('utf8')
+            nonce = data["nonce"].encode('utf8')
+            prev_id = data["prev"].encode('utf8')
+            pow_computed = hashlib.sha256(utx + prev_id + nonce).hexdigest()
+            print(pow_computed)
+            if int(data['pow'], 16) < self.DIFFICULTY:
+                print('failed check e')
+                return False
 
             return self.validate_tx(data['tx'])
         except Exception as e:
@@ -235,14 +208,14 @@ class ZachCoinClient (Node):
             print(f'\t\tin validate_tx f. v')
             # output_sum = sum(out['value'] for out in tx['output'])
             output_sum = 0
-            for o in tx['output']:
-                if int(o['value']) != 50:
-                    output_sum += int(o['value'])
+            for o in tx['output'][:-1]:
+                # if int(o['value']) != 50:
+                output_sum += int(o['value'])
             if 'tx' in input_block and 'output' in input_block['tx'] and len(input_block['tx']['output']) >= int(out_n) + 1:
                 input_val = input_block['tx']['output'][out_n]['value']
 
-                print('input val and output sum')
-                print(input_val, output_sum)
+                # print('input val and output sum')
+                # print(input_val, output_sum)
 
                 if input_val != output_sum:
                     print('failed check f v')
@@ -253,7 +226,10 @@ class ZachCoinClient (Node):
             nouts = len(tx["output"])
             # "There should be no more than two outputs and no fewer than one output for any unverified transaction (not
             # including the coinbase transaction which is added by the miner, described later)"
-            if (not (1 <= nouts <= 3)) or (not (all('value' in item and isinstance(item['value'], int) and item['value'] > 0 for item in tx['output']))): 
+            b2 = (not (all('value' in item and int(item['value']) > 0 for item in tx['output'])))
+            print('b2: ', b2)
+            print(nouts)
+            if (not (1 <= nouts <= 3)) or (not (all('value' in item and int(item['value']) > 0 for item in tx['output']))): 
                 print('failed check f vi')
                 return False 
             
@@ -373,11 +349,7 @@ def main():
             # and just make the utx for myself 
             last_block = client.blockchain[-1]
             last_output_val = last_block['tx']['output'][-1]['value']
-            print(type(last_output_val), last_output_val)
             last_output_n = len(last_block['tx']['output']) - 1
-            print(type(last_output_n), last_output_n)
-
-            print(last_block)
 
             injson = { 'id': last_block['id'], 'n': last_output_n }
             sig = sk.sign(json.dumps(injson, sort_keys=True).encode('utf8')).hex()
@@ -395,45 +367,43 @@ def main():
 
         elif x == 4: 
 
-            # find a valid utx from the pool 
-            # found_utx = False 
-            # for i, g in enumerate(client.utx[::-1][10:]):
-            #     if client.validate_tx(g):
-            #         found_utx = True
-            #         break
-            # for i in range(len(client.utx)):
-            #     if client.validate_tx(client.utx[i]):
-            #         found_utx = True
-            #         break
-            # if not found_utx: 
-            #     print('no valid utxs in pool')
-            # else: 
+            # submit a valid utx to the pool 
+            last_block = client.blockchain[-1]
+            last_output_val = last_block['tx']['output'][-1]['value']
+            last_output_n = len(last_block['tx']['output']) - 1
 
-                # # mine 
-                # mineutx = client.utx[i]
-                # mineutx['output'].append({'value': ZachCoinClient.COINBASE, 'pub_key': my_pub})        
-                # print('mineutx:')
-                # print(mineutx)
-                # prev = client.blockchain[-1]
-                # pow, nonce = mine_transaction(mineutx, json.dumps(prev, sort_keys=True))
+            injson = { 'id': last_block['id'], 'n': last_output_n }
+            sig = sk.sign(json.dumps(injson, sort_keys=True).encode('utf8')).hex()
+            mineutx = {
+                'type': 1,
+                'input': injson,
+                'sig': sig,
+                'output': [{
+                    'value': str(last_output_val),
+                    'pub_key': my_pub
+                }]
+            }
 
-                # # construct and submit block 
-                # block_id = hashlib.sha256(json.dumps(mineutx,
-                #     sort_keys=True).encode('utf8')).hexdigest()
-                # new_block = {
-                #     "type": 0,
-                #     "id": block_id,
-                #     "nonce": nonce,
-                #     "pow": pow,
-                #     "prev": prev['id'],
-                #     "tx": mineutx
-                # }
+            client.send_to_nodes(mineutx)
 
-            new_block = {'type': 0, 'id': '51e16cc701eea3debeacbbfc255e26a6bffc3dd8211508ac6ed91dfdf052444f', 'nonce': '11192ecff3ed287f1267ade6d4da6dcb', 'pow': '0b7c3f7fd735a87bfff7cb8772deac643ef7058dc6a13ecd6e409ea1f4e4e1aa', 'prev': '388339ee482f4fca4087fd920d7a443af867c0425e1ad1d00c23e9863fe4f8ff', 'tx': {'type': 1, 'input': {'id': '20b06e5a31d6beb3b3b5d69c31d1f1e7175cdd6c4c452c88cb259a2f1e970038', 'n': 1}, 'sig': '61fe3b84d394d3a0345b499db03684f59acac6296ab78be7fb790165bd9f8fae1de2e35e8b85b00e6f94e3c3d1f328d4', 'output': [{'value': 25, 'pub_key': '43b2c064a95c87baa35e7ec99d58d6882618a7be1a45686970ab22eaaa716705facf027abe03ed9813de2d954cf2d667'}, {'value': 25, 'pub_key': 'c26cfef538dd15b6f52593262403de16fa2dc7acb21284d71bf0a28f5792581b4a6be89d2a7ec1d4f7849832fe7b4daa'}, {'value': 50, 'pub_key': '75fa6f7d6263203194ed9c9111ec07c643fcdd9643507c0fdc39e2fdea6b17dd760cc9822f35688a8fdcdd1bc6c0f6a0'}]}}
-            print('submitting my block')
-            print(new_block)
+            # mine 
+            mineutx['output'].append({'value': ZachCoinClient.COINBASE, 'pub_key': my_pub})        
+            print('mineutx:')
+            print(mineutx)
+            prev = client.blockchain[-1]
+            pow, nonce = mine_transaction(mineutx, json.dumps(prev, sort_keys=True))
 
-            
+            # construct and submit block 
+            block_id = hashlib.sha256(json.dumps(mineutx,
+                sort_keys=True).encode('utf8')).hexdigest()
+            new_block = {
+                "type": 0,
+                "id": block_id,
+                "nonce": nonce,
+                "pow": pow,
+                "prev": prev['id'],
+                "tx": mineutx
+            }
 
 
             client.send_to_nodes(new_block)
