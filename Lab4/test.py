@@ -1,235 +1,66 @@
+from Crypto.Cipher import AES
+from Crypto.Random import get_random_bytes
 import hashlib, json
-from ecdsa import VerifyingKey, SigningKey
+from Crypto import Random
 
-BLOCK = 0
-TRANSACTION = 1
 DIFFICULTY = 0x0000007FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
 
-sk = SigningKey.generate()
-vk = sk.verifying_key
-
-blockchain = []
-
-
-# ----
-# b1
-b1 = {
-    "type": BLOCK,
-    "id": "b4b9b8f78ab3dc70833a19bf7f2a0226885ae2416d41f4f0f798762560b81b60",
-    "nonce": "1950b006f9203221515467fe14765720",
-    "pow": "00000027e2eb250f341b05ffe24f43adae3b8181739cd976ea263a4ae0ff8eb7",
-    "prev": "b4b9b8f78ab3dc70833a19bf7f2a0226885ae2416d41f4f0f798762560b81b60",
-    "tx": {
-        "type": TRANSACTION,
-        "input": {
-            "id": "0000000000000000000000000000000000000000000000000000000000000000",
-            "n": 0
-        },
-        "sig": "adf494f10d30814fd26c6f0e1b2893d0fb3d037b341210bf23ef9705479c7e90879f794a29960d3ff13b50ecd780c872",
-        "output": [
-            {
-                "value": 50,
-                "pub_key": vk.to_string().hex()
-            }
-        ]
+prev =  {
+  "type": 0,
+  "id": "e6f5b54ff5d56bd84ba6a73e7427bd301a00b5ddc617decb447c45e2f2c7ecf9",
+  "nonce": "d4d08f2f264f782a1abf392ef4c5dc1e",
+  "pow": "000000799651c0623c467b4082884ba80f696691977e568610fcb1b94b6720d4",
+  "prev": "180d003f7cb67fa87f1cf7584b3430378543154ab973d1e3814d1814e353184f",
+  "tx": {
+   "type": 1,
+   "input": {
+    "id": "78dc1cc5b48296b1bef9aa362ea8314a1794b3630015171431d709a827115f17",
+    "n": 0
+   },
+   "sig": "86bb3ca7e1fe7659a64c9bc26ce0a1ce6e721497dd8542f8f9ac00396a45e939d0df050f1a772b920043a05e31e4a436",
+   "output": [
+    {
+     "value": 5,
+     "pub_key": "2a3332b42e28499bcc8283fa55648a1679c0b2793ca1005139c321bd0e0d82c144180435b24afff61754b8ab32afadc2"
+    },
+    {
+     "value": 45,
+     "pub_key": "9e46b03be11b4e64aefb3b26a85bb77105614a56c77a026a7d469de01f13d29426adf2946f1d58171b16c86eff37a3fe"
+    },
+    {
+     "value": 50,
+     "pub_key": "9e46b03be11b4e64aefb3b26a85bb77105614a56c77a026a7d469de01f13d29426adf2946f1d58171b16c86eff37a3fe"
     }
+   ]
+  }
 }
 
-
-# ----
-# b2 
-# note: not making nonce and pow legit for now 
-
-prev_id = b1['id']
-
-input_json = { 'id': prev_id, 'n': 0 }
-sig = sk.sign(json.dumps(input_json, sort_keys=True).encode('utf8')).hex()
-
-b2tx = {
-    "type": TRANSACTION,
-    "input": input_json,
-    "sig": sig,
-    "output": [
-        {
-            "value": 50,
-            "pub_key": "75fa6f7d6263203194ed9c9111ec07c643fcdd9643507c0fdc39e2fdea6b17dd760cc9822f35688a8fdcdd1bc6c0f6a0"
-        }
-    ]
-}
-
-b2id = hashlib.sha256(json.dumps(b2tx, sort_keys=True).encode('utf8')).hexdigest()
-
-b2 = {
-    "type": BLOCK,
-    "id": b2id, 
-    "nonce": "1950b006f9203221515467fe14765720",
-    "pow": "00000027e2eb250f341b05ffe24f43adae3b8181739cd976ea263a4ae0ff8eb7",
-    "prev": "b4b9b8f78ab3dc70833a19bf7f2a0226885ae2416d41f4f0f798762560b81b60",
-    "tx": b2tx
-}
+block = {'type': 0, 'id': '91a0aa419952c57a6565ca541624e32c42c094af14250341e4678fbfc511d73a', 'nonce': '0553a308632631c0f06791530c86f809', 'pow': '0000003ad9682742eb55cffca80157345b2f2ce966c8cb33923c4dc71fba2692', 'prev': 'e6f5b54ff5d56bd84ba6a73e7427bd301a00b5ddc617decb447c45e2f2c7ecf9', 'tx': {'type': 1, 'input': {'id': 'e6f5b54ff5d56bd84ba6a73e7427bd301a00b5ddc617decb447c45e2f2c7ecf9', 'n': 2}, 'sig': 'f20ffed21d5a2782c11009e2bbc74c30d27db32a9c3c896779fccc7623eefb6f6939903995fde7e0ece074a2d7b6ef0d', 'output': [{'value': '50', 'pub_key': '75fa6f7d6263203194ed9c9111ec07c643fcdd9643507c0fdc39e2fdea6b17dd760cc9822f35688a8fdcdd1bc6c0f6a0'}, {'value': 50, 'pub_key': '75fa6f7d6263203194ed9c9111ec07c643fcdd9643507c0fdc39e2fdea6b17dd760cc9822f35688a8fdcdd1bc6c0f6a0'}]}}
 
 
-def validate_tx(tx):
-    try:
-        # ----- f. validate the transaction
-        print(f'\tin validate_tx f')
+def mine_transaction(utx, prev):
+    nonce = Random.new().read(AES.block_size).hex()
+    i = 0
+    while( int( hashlib.sha256(json.dumps(utx, sort_keys=True).encode('utf8') +
+    prev.encode('utf-8') + nonce.encode('utf-8')).hexdigest(), 16) > DIFFICULTY):
 
-        # i. 
-        print(f'\t\tin validate_block f. i')
-        required_tx_fields = ["type", "input", "sig", "output"]
-        for field in required_tx_fields:
-            if field not in tx:
-                print('failed check f i')
-                return False
-            
-        # ii. 
-        print(f'\t\tin validate_tx f. ii')
-        if tx["type"] != TRANSACTION:
-            print('failed check f ii')
-            return False
+        i += 1
+        if i % 100000 == 0:
+            print('still mining')
+        nonce = Random.new().read(AES.block_size).hex()
+    pow = hashlib.sha256(json.dumps(utx, sort_keys=True).encode('utf8') +
+    prev.encode('utf-8') + nonce.encode('utf-8')).hexdigest()
+    return pow, nonce
 
-        # iii 
-        input_block_id = tx['input']['id']
-        found = False
-        for input_block_idx, b in enumerate(blockchain): 
-            if b['id'] == input_block_id:
-                found = True
-                break 
-        if not found:
-            print('failed check f iii, no valid block')
-            return False 
-        input_block = blockchain[input_block_idx]
-        
-        # iii. (part of it's above)
-        print(f'\t\tin validate_tx f. iii')
-        if 'tx' in input_block and 'output' in input_block['tx']:
-            if tx['input']['n'] + 1 > len(input_block['tx']['output']):
-                print('failed check f iii, does not refer to valid output')
-                return False 
-        
-        # iv. there is no other valid transaction referring to the
-        # same output currently in the blockchain
-        print(f'\t\tin validate_tx f. iv')
-        out_id = tx['input']['id']
-        out_n = tx['input']['n']
-        for b in blockchain:
-            if 'tx' in b and 'input' in b['tx'] and 'id' in b['tx']['input'] and 'n' in b['tx']['input']:
-                if b['tx']['input']['id'] == out_id and b['tx']['input']['id'] == out_n:
-                    print('failed check f iv')
-                    return False 
-
-        # v. value of the input equals the sum of the outputs 
-        # (Assuming input and output both from the given block?)
-        print(f'\t\tin validate_tx f. v')
-        output_sum = sum(out['value'] for out in tx['output'])
-        if 'tx' in input_block and 'output' in input_block['tx'] and len(input_block['tx']['output']) >= out_n + 1:
-            input_val = input_block['tx']['output'][out_n]['value']
-
-            if input_val != output_sum:
-                print('failed check f v')
-                return False 
-                
-        # vi.
-        print(f'\t\tin validate_tx f. vi')
-        nouts = len(tx["output"])
-        # "There should be no more than two outputs and no fewer than one output for any unverified transaction (not
-        # including the coinbase transaction which is added by the miner, described later)"
-        if (not (1 <= nouts <= 3)) or (not (all('value' in item and isinstance(item['value'], int) and item['value'] > 0 for item in tx['output']))): 
-            print('failed check f vi')
-            return False 
-        
-        # vii. 
-        print(f'\t\tin validate_tx f. vii')
-        if tx['output'][-1]['value'] != 50: 
-            print('failed check f vii')
-            return False 
-        
-        # viii. 
-        input_output = None
-        if 'tx' in input_block and 'output' in input_block['tx']:
-            if len(input_block['tx']['output']) <= out_n + 1:
-                input_output = input_block['tx']['output'][out_n]
-        if input_output is None: 
-            print('failed check f viii (first part)')
-            return False     
-
-        vk = VerifyingKey.from_string(bytes.fromhex(input_output['pub_key']))
-        viii = vk.verify(bytes.fromhex(tx['sig']), json.dumps(tx['input'], sort_keys=True).encode('utf8'))
-        if not viii: 
-            print('failed check f viii (second part)')
-            return False
-        
-        return True
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        print('failed validate_tx try()')
-        return False
+print(type(prev))
+print(type(block['tx']))
 
 
-def validate_block(data):
-    try:
+gg = json.dumps(prev, sort_keys=True)
+print(type(gg), gg)
 
-        # a. check if all required fields are present
-        print(f'\tin validate_block a')
-        required_block_fields = ["type", "id", "nonce", "pow", "prev", "tx"]
-        for field in required_block_fields:
-            if field not in data:
-                print('failed check a')
-                return False
-        
-        # b. check if the type field is 0
-        print(f'\tin validate_block b')
-        if data["type"] != BLOCK:
-            print('failed check b')
-            return False
-        
-        # c. verify the block ID
-        print(f'\tin validate_block c')
-        computed_id = hashlib.sha256(json.dumps(data["tx"], sort_keys=True).encode('utf8')).hexdigest()
-        if data["id"] != computed_id:
-            print('failed check c')
-            return False
-        
-        # finding index of current passed in block, in blockchain 
-        #   (must find, b/c this is called in function where we can't also pass an index)
-        found = False
-        for blockchain_idx, b in enumerate(blockchain): 
-            if b['id'] == data['id']:
-                found = True
-                break 
-        if not found or blockchain_idx < 1:
-            print('could not find current block in blockchain')
-            return False 
-        # find prev block 
-        prev_block = blockchain[blockchain_idx - 1]
-      
+print(type(json.dumps(block['tx'], sort_keys=True)), json.dumps(block['tx'], sort_keys=True))
 
-        # d. check if prev stores the block ID of the preceding block
-        if data['prev'] != prev_block['id']:
-            print('failed check d')
-            return False
-        
-        # # e. validate the proof-of-work
-        # print(f'\tin validate_block e')
-        # utx = json.dumps(data["tx"], sort_keys=True).encode('utf8')
-        # nonce = data["nonce"].encode('utf8')
-        # prev_id = data["prev"].encode('utf8')
-        # pow_computed = hashlib.sha256(utx + prev_id + nonce).hexdigest()
-        # if int(pow_computed, 16) > DIFFICULTY:
-        #     print('failed check e')
-        #     return False
+pow, nonce = mine_transaction(json.dumps(block['tx'], sort_keys=True), json.dumps(prev, sort_keys=True))
+print(pow, nonce)
 
-        return validate_tx(data['tx'])
-    
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        print('failed validate_block try()')
-        return False
-
-
-
-
-
-blockchain = [b1, b2]
-gg = validate_block(b2)
-print('gg: ', gg)

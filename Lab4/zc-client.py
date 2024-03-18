@@ -68,8 +68,6 @@ class ZachCoinClient (Node):
 
         if data != None:
             if 'type' in data:
-                # print('yoooo', type(data['type']), data['type'])
-                print('yo')
                 print(data)
                 if data['type'] == self.TRANSACTION:
                     self.utx.append(data)
@@ -144,7 +142,7 @@ class ZachCoinClient (Node):
             prev_id = data["prev"].encode('utf8')
             pow_computed = hashlib.sha256(utx + prev_id + nonce).hexdigest()
             print(pow_computed)
-            if int(data['pow'], 16) < self.DIFFICULTY:
+            if int(data['pow'], 16) >= self.DIFFICULTY:
                 print('failed check e')
                 return False
 
@@ -263,25 +261,61 @@ class ZachCoinClient (Node):
 
 
 
-def mine_transaction(utx, prev):
-    static_part = json.dumps(utx, sort_keys=True).encode('utf8') + json.dumps(prev, sort_keys=True).encode('utf8')
+# def mine_transaction(utx, prev):
+#     static_part = json.dumps(utx, sort_keys=True).encode('utf8') + json.dumps(prev, sort_keys=True).encode('utf8')
     
+#     nonce = Random.new().read(AES.block_size).hex()
+
+#     print(f'Mining ... .....')
+#     last_print_time = time.time()
+
+#     while( int( hashlib.sha256(static_part + nonce.encode('utf-8')).hexdigest(), 16) > ZachCoinClient.DIFFICULTY):
+#         nonce = Random.new().read(AES.block_size).hex()
+        
+#         if time.time() - last_print_time >= 30:
+#             print('still mining...')
+#             last_print_time = time.time()
+
+#     pow = hashlib.sha256(json.dumps(utx, sort_keys=True).encode('utf8') +
+#     prev.encode('utf-8') + nonce.encode('utf-8')).hexdigest()
+
+#     print('Mining successful')
+#     return pow, nonce
+        
+def mine_transaction(utx, prev):
     nonce = Random.new().read(AES.block_size).hex()
 
-    print(f'Mining ... .....')
-    last_print_time = time.time()
+    static_part = int(hashlib.sha256(json.dumps(utx, sort_keys=True).encode('utf8') + prev.encode('utf-8')), 16)
 
-    while( int( hashlib.sha256(static_part + nonce.encode('utf-8')).hexdigest(), 16) > ZachCoinClient.DIFFICULTY):
+    i = 0
+    while ( int(static_part + nonce.encode('utf-8')).hexdigest(), 16) > ZachCoinClient.DIFFICULTY:
+        i += 1
+        if i % 100 == 0:
+            print('still mining')
         nonce = Random.new().read(AES.block_size).hex()
-        
-        if time.time() - last_print_time >= 30:
-            print('still mining...')
-            last_print_time = time.time()
-
     pow = hashlib.sha256(json.dumps(utx, sort_keys=True).encode('utf8') +
     prev.encode('utf-8') + nonce.encode('utf-8')).hexdigest()
+    return pow, nonce
 
-    print('Mining successful')
+def mine_transaction(utx, prev):
+    constant_part = json.dumps(utx, sort_keys=True).encode('utf8') + json.dumps(prev, sort_keys=True).encode('utf8')
+    
+    nonce = Random.new().read(AES.block_size).hex()
+    
+    i = 0
+    while True:
+        hash_hex = hashlib.sha256(constant_part + nonce.encode('utf-8')).hexdigest()
+        
+        if int(hash_hex, 16) <= ZachCoinClient.DIFFICULTY:
+            break
+        
+        nonce = Random.new().read(AES.block_size).hex()
+
+        i += 1
+        if i % 100000 == 0:
+            print('still mining')
+    
+    pow = hashlib.sha256(constant_part + nonce.encode('utf-8')).hexdigest()
     return pow, nonce
 
 def main():
@@ -392,7 +426,11 @@ def main():
             print('mineutx:')
             print(mineutx)
             prev = client.blockchain[-1]
-            pow, nonce = mine_transaction(mineutx, json.dumps(prev, sort_keys=True))
+            print(type(prev))
+            # pow, nonce = mine_transaction(json.dumps(mineutx, sort_keys=True), json.dumps(prev, sort_keys=True))
+            pow, nonce = mine_transaction(mineutx, prev)
+            print('done mining')
+            
 
             # construct and submit block 
             block_id = hashlib.sha256(json.dumps(mineutx,
@@ -406,6 +444,7 @@ def main():
                 "tx": mineutx
             }
 
+            # new_block = {'type': 0, 'id': 'cca4dc8083229c1047a701fe42534724def6fb7cf1b494e3936073e07f9d4cea', 'nonce': '8a5da448a0f4a92d6257bf8826970171', 'pow': '0000002a3c1235c13e5e23777305a8ffbf4a424d625be6b577a93cedd26f0130', 'prev': 'e6f5b54ff5d56bd84ba6a73e7427bd301a00b5ddc617decb447c45e2f2c7ecf9', 'tx': {'type': 1, 'input': {'id': 'e6f5b54ff5d56bd84ba6a73e7427bd301a00b5ddc617decb447c45e2f2c7ecf9', 'n': 2}, 'sig': '40c2f9d30e435ab8d96f186105e06d5580da39da980b18ac0f80312e69a804caa4cd0404ca5c6b231c3f28d296c59a97', 'output': [{'value': '50', 'pub_key': '75fa6f7d6263203194ed9c9111ec07c643fcdd9643507c0fdc39e2fdea6b17dd760cc9822f35688a8fdcdd1bc6c0f6a0'}, {'value': 50, 'pub_key': '75fa6f7d6263203194ed9c9111ec07c643fcdd9643507c0fdc39e2fdea6b17dd760cc9822f35688a8fdcdd1bc6c0f6a0'}]}}
 
             client.send_to_nodes(new_block)
             
