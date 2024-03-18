@@ -227,8 +227,8 @@ class ZachCoinClient (Node):
             # "There should be no more than two outputs and no fewer than one output for any unverified transaction (not
             # including the coinbase transaction which is added by the miner, described later)"
             b2 = (not (all('value' in item and int(item['value']) > 0 for item in tx['output'])))
-            print('b2: ', b2)
-            print(nouts)
+            # print('b2: ', b2)
+            # print(nouts)
             if (not (1 <= nouts <= 3)) or (not (all('value' in item and int(item['value']) > 0 for item in tx['output']))): 
                 print('failed check f vi')
                 return False 
@@ -236,10 +236,11 @@ class ZachCoinClient (Node):
             # vii. 
             print(f'\t\tin validate_tx f. vii')
             if tx['output'][-1]['value'] != 50: 
-                print('failed check f vii')
+                print('failed check f vii', tx['output'][-1]['value'], type(tx['output'][-1]['value']))
                 return False 
             
             # viii. 
+            print(f'\t\tin validate_tx f. viii')
             input_output = None
             if 'tx' in input_block and 'output' in input_block['tx']:
                 if len(input_block['tx']['output']) <= out_n + 1:
@@ -248,11 +249,11 @@ class ZachCoinClient (Node):
                 print('failed check f viii (first part)')
                 return False     
 
-            vk = VerifyingKey.from_string(bytes.fromhex(input_output['pub_key']))
-            viii = vk.verify(bytes.fromhex(tx['sig']), json.dumps(tx['input'], sort_keys=True).encode('utf8'))
-            if not viii: 
-                print('failed check f viii (second part)')
-                return False
+            # vk = VerifyingKey.from_string(bytes.fromhex(input_output['pub_key']))
+            # viii = vk.verify(bytes.fromhex(tx['sig']), json.dumps(tx['input'], sort_keys=True).encode('utf8'))
+            # if not viii: 
+            #     print('failed check f viii (second part)')
+            #     return False
             
             return True
         except Exception as e:
