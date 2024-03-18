@@ -372,15 +372,21 @@ def main():
             # for now, just links a utx to the last block in the block chain
             # and just make the utx for myself 
             last_block = client.blockchain[-1]
+            last_output_val = last_block['tx']['output'][-1]['value']
+            print(type(last_output_val), last_output_val)
+            last_output_n = len(last_block['tx']['output']) - 1
+            print(type(last_output_n), last_output_n)
 
-            injson = { 'id': last_block['id'], 'n': 2 }
+            print(last_block)
+
+            injson = { 'id': last_block['id'], 'n': last_output_n }
             sig = sk.sign(json.dumps(injson, sort_keys=True).encode('utf8')).hex()
             myutx = {
                 'type': 1,
                 'input': injson,
                 'sig': sig,
                 'output': [{
-                    'value': 2,
+                    'value': str(last_output_val),
                     'pub_key': my_pub
                 }]
             }
