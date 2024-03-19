@@ -260,62 +260,21 @@ class ZachCoinClient (Node):
             return False
 
 
-
-# def mine_transaction(utx, prev):
-#     static_part = json.dumps(utx, sort_keys=True).encode('utf8') + json.dumps(prev, sort_keys=True).encode('utf8')
-    
-#     nonce = Random.new().read(AES.block_size).hex()
-
-#     print(f'Mining ... .....')
-#     last_print_time = time.time()
-
-#     while( int( hashlib.sha256(static_part + nonce.encode('utf-8')).hexdigest(), 16) > ZachCoinClient.DIFFICULTY):
-#         nonce = Random.new().read(AES.block_size).hex()
-        
-#         if time.time() - last_print_time >= 30:
-#             print('still mining...')
-#             last_print_time = time.time()
-
-#     pow = hashlib.sha256(json.dumps(utx, sort_keys=True).encode('utf8') +
-#     prev.encode('utf-8') + nonce.encode('utf-8')).hexdigest()
-
-#     print('Mining successful')
-#     return pow, nonce
-        
 def mine_transaction(utx, prev):
     nonce = Random.new().read(AES.block_size).hex()
 
-    static_part = int(hashlib.sha256(json.dumps(utx, sort_keys=True).encode('utf8') + prev.encode('utf-8')), 16)
+    static_part = json.dumps(utx, sort_keys=True).encode('utf8') + prev.encode('utf-8')
 
     i = 0
-    while ( int(static_part + nonce.encode('utf-8')).hexdigest(), 16) > ZachCoinClient.DIFFICULTY:
-        i += 1
-        if i % 100 == 0:
-            print('still mining')
-        nonce = Random.new().read(AES.block_size).hex()
-    pow = hashlib.sha256(json.dumps(utx, sort_keys=True).encode('utf8') +
-    prev.encode('utf-8') + nonce.encode('utf-8')).hexdigest()
-    return pow, nonce
-
-def mine_transaction(utx, prev):
-    constant_part = json.dumps(utx, sort_keys=True).encode('utf8') + json.dumps(prev, sort_keys=True).encode('utf8')
-    
-    nonce = Random.new().read(AES.block_size).hex()
-    
-    i = 0
-    while True:
-        hash_hex = hashlib.sha256(constant_part + nonce.encode('utf-8')).hexdigest()
-        
-        if int(hash_hex, 16) <= ZachCoinClient.DIFFICULTY:
-            break
-        
+    while( int( hashlib.sha256(static_part + nonce.encode('utf-8')).hexdigest(), 16) > ZachCoinClient.DIFFICULTY):
         nonce = Random.new().read(AES.block_size).hex()
 
         i += 1
         if i % 100000 == 0:
             print('still mining')
-    
-    pow = hashlib.sha256(constant_part + nonce.encode('utf-8')).hexdigest()
+
+    pow = hashlib.sha256(json.dumps(utx, sort_keys=True).encode('utf8') +
+    prev.encode('utf-8') + nonce.encode('utf-8')).hexdigest()
     return pow, nonce
 
 def main():
@@ -393,7 +352,7 @@ def main():
                 'input': injson,
                 'sig': sig,
                 'output': [{
-                    'value': str(last_output_val),
+                    'value': last_output_val,
                     'pub_key': my_pub
                 }]
             }
@@ -402,33 +361,38 @@ def main():
 
         elif x == 4: 
 
-            # submit a valid utx to the pool 
-            last_block = client.blockchain[-1]
-            last_output_val = last_block['tx']['output'][-1]['value']
-            last_output_n = len(last_block['tx']['output']) - 1
+            # # submit a valid utx to the pool 
+            # last_block = client.blockchain[-1]
+            # last_output_val = last_block['tx']['output'][-1]['value']
+            # last_output_n = len(last_block['tx']['output']) - 1
 
-            injson = { 'id': last_block['id'], 'n': last_output_n }
-            sig = sk.sign(json.dumps(injson, sort_keys=True).encode('utf8')).hex()
-            mineutx = {
-                'type': 1,
-                'input': injson,
-                'sig': sig,
-                'output': [{
-                    'value': str(last_output_val),
-                    'pub_key': my_pub
-                }]
-            }
+            # injson = { 'id': last_block['id'], 'n': last_output_n }
+            # sig = sk.sign(json.dumps(mineutx['input'], sort_keys=True).encode('utf8')).hex()
+            # mineutx = {
+            #     'type': 1,
+            #     'input': injson,
+            #     'sig': sig,
+            #     'output': [{
+            #         'value': last_output_val,
+            #         'pub_key': my_pub
+            #     }]
+            # }
+            
+            # client.send_to_nodes(mineutx)
 
-            client.send_to_nodes(mineutx)
-
-            # mine 
-            mineutx['output'].append({'value': ZachCoinClient.COINBASE, 'pub_key': my_pub})        
-            print('mineutx:')
-            print(mineutx)
+            # # mine 
+            # mineutx['output'].append({'value': ZachCoinClient.COINBASE, 'pub_key': my_pub})        
+            # print('mineutx:')
+            # print(mineutx)
             prev = client.blockchain[-1]
             print(type(prev))
-            # pow, nonce = mine_transaction(json.dumps(mineutx, sort_keys=True), json.dumps(prev, sort_keys=True))
-            pow, nonce = mine_transaction(mineutx, prev)
+            # # pow, nonce = mine_transaction(json.dumps(mineutx, sort_keys=True), json.dumps(prev, sort_keys=True))
+            mineutx = client.utx[-1]
+            mineutx['output'].append({'value': ZachCoinClient.COINBASE, 'pub_key': my_pub})        
+            print(mineutx)
+            
+
+            pow, nonce = mine_transaction(mineutx, prev['id'])
             print('done mining')
             
 
