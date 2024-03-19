@@ -80,13 +80,10 @@ class ZachCoinClient (Node):
                     print('in node_message: successfully updated utxpool')
                 elif data['type'] == self.BLOCK:
                     valid_block = self.validate_block(data)
-                    print('hereeeeee:')
                     print(data)
                     print('validated block returned: ', valid_block)
                     if valid_block:
                         self.blockchain.append(data)
-                    
-
 
     def node_disconnect_with_outbound_node(self, connected_node):
         print("node wants to disconnect with oher outbound node: " + connected_node.id)
@@ -207,13 +204,13 @@ class ZachCoinClient (Node):
             # output_sum = sum(out['value'] for out in tx['output'])
             output_sum = 0
             for o in tx['output'][:-1]:
-                # if int(o['value']) != 50:
-                output_sum += int(o['value'])
+                if int(o['value']) != 50:
+                    output_sum += int(o['value'])
             if 'tx' in input_block and 'output' in input_block['tx'] and len(input_block['tx']['output']) >= int(out_n) + 1:
                 input_val = input_block['tx']['output'][out_n]['value']
 
-                # print('input val and output sum')
-                # print(input_val, output_sum)
+                print('input val and output sum')
+                print(input_val, output_sum)
 
                 if input_val != output_sum:
                     print('failed check f v')
@@ -247,11 +244,11 @@ class ZachCoinClient (Node):
                 print('failed check f viii (first part)')
                 return False     
 
-            # vk = VerifyingKey.from_string(bytes.fromhex(input_output['pub_key']))
-            # viii = vk.verify(bytes.fromhex(tx['sig']), json.dumps(tx['input'], sort_keys=True).encode('utf8'))
-            # if not viii: 
-            #     print('failed check f viii (second part)')
-            #     return False
+            vk = VerifyingKey.from_string(bytes.fromhex(input_output['pub_key']))
+            viii = vk.verify(bytes.fromhex(tx['sig']), json.dumps(tx['input'], sort_keys=True).encode('utf8'))
+            if not viii: 
+                print('failed check f viii (second part)')
+                return False
             
             return True
         except Exception as e:
@@ -334,9 +331,10 @@ def main():
             print("vk: ", vk.to_string().hex())
         elif x == 1:
             print(json.dumps(client.blockchain, indent=1))
+            print(len(client.blockchain))
         elif x == 2:
             print(json.dumps(client.utx, indent=1))
-
+            print(len(client.utx))
         elif x == 3:
 
             # for now, just links a utx to the last block in the block chain
@@ -360,34 +358,20 @@ def main():
             client.send_to_nodes(myutx)
 
         elif x == 4: 
-
-            # # submit a valid utx to the pool 
-            # last_block = client.blockchain[-1]
-            # last_output_val = last_block['tx']['output'][-1]['value']
-            # last_output_n = len(last_block['tx']['output']) - 1
-
-            # injson = { 'id': last_block['id'], 'n': last_output_n }
-            # sig = sk.sign(json.dumps(mineutx['input'], sort_keys=True).encode('utf8')).hex()
             # mineutx = {
-            #     'type': 1,
-            #     'input': injson,
-            #     'sig': sig,
-            #     'output': [{
-            #         'value': last_output_val,
-            #         'pub_key': my_pub
-            #     }]
+            #     "type": 1,
+            #     "input": {
+            #     "id": "180d003f7cb67fa87f1cf7584b3430378543154ab973d1e3814d1814e353184f",
+            #     "n": 2
+            #     },
+            #     "sig": "13a455eba7fa47fe10f76fa32fea6b6ceb5caa075f54a0600e6fe42f8ea55c73ed34531bba61414135ac2bd926ba8da7",
+            #     "output": [
+            #     {
+            #         "value": 2,
+            #         "pub_key": "75fa6f7d6263203194ed9c9111ec07c643fcdd9643507c0fdc39e2fdea6b17dd760cc9822f35688a8fdcdd1bc6c0f6a0"
+            #     }
+            #     ]
             # }
-            
-            # client.send_to_nodes(mineutx)
-
-            # # mine 
-            # mineutx['output'].append({'value': ZachCoinClient.COINBASE, 'pub_key': my_pub})        
-            # print('mineutx:')
-            # print(mineutx)
-            prev = client.blockchain[-1]
-            print(type(prev))
-            # # pow, nonce = mine_transaction(json.dumps(mineutx, sort_keys=True), json.dumps(prev, sort_keys=True))
-            mineutx = client.utx[-1]
             mineutx['output'].append({'value': ZachCoinClient.COINBASE, 'pub_key': my_pub})        
             print(mineutx)
             
@@ -407,8 +391,6 @@ def main():
                 "prev": prev['id'],
                 "tx": mineutx
             }
-
-            # new_block = {'type': 0, 'id': 'cca4dc8083229c1047a701fe42534724def6fb7cf1b494e3936073e07f9d4cea', 'nonce': '8a5da448a0f4a92d6257bf8826970171', 'pow': '0000002a3c1235c13e5e23777305a8ffbf4a424d625be6b577a93cedd26f0130', 'prev': 'e6f5b54ff5d56bd84ba6a73e7427bd301a00b5ddc617decb447c45e2f2c7ecf9', 'tx': {'type': 1, 'input': {'id': 'e6f5b54ff5d56bd84ba6a73e7427bd301a00b5ddc617decb447c45e2f2c7ecf9', 'n': 2}, 'sig': '40c2f9d30e435ab8d96f186105e06d5580da39da980b18ac0f80312e69a804caa4cd0404ca5c6b231c3f28d296c59a97', 'output': [{'value': '50', 'pub_key': '75fa6f7d6263203194ed9c9111ec07c643fcdd9643507c0fdc39e2fdea6b17dd760cc9822f35688a8fdcdd1bc6c0f6a0'}, {'value': 50, 'pub_key': '75fa6f7d6263203194ed9c9111ec07c643fcdd9643507c0fdc39e2fdea6b17dd760cc9822f35688a8fdcdd1bc6c0f6a0'}]}}
 
             client.send_to_nodes(new_block)
             
@@ -439,3 +421,4 @@ def main():
         
 if __name__ == "__main__":
     main()
+    
